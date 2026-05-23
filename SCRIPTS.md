@@ -28,6 +28,8 @@ node scripts/scan.js
 
 Prints a color-coded terminal report. Unknown folders (not in the documented list) are flagged with a warning at the top.
 
+> **The report is a point-in-time snapshot.** Sizes reflect the moment you ran the scan. If you delete files, re-run the script to see updated numbers.
+
 ### Flags
 
 | Flag | What it does |
