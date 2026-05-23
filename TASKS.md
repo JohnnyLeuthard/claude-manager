@@ -92,8 +92,10 @@ The goal of Phase 2 is to build automated tools to scan, classify, and safely cl
   - [x] `--html`, `--html-only`, `--no-color` flags; auto-detects TTY for piped output
   - [x] HTML report: make folder path a clickable `file://` link that opens the folder in Finder/Explorer
   - [x] HTML report: add "Docs →" link on each card to the most relevant official Anthropic docs page (null = no link shown)
+  - [ ] 🟢 HTML report: add a "Search Google" link on each folder card that opens a new browser tab with a Google search for the folder name (e.g., `~/.claude/plans claude code`) — helps users research unfamiliar folders without leaving the dashboard
   - [ ] 🟡 HTML report: add a Refresh button that re-runs the scan and reloads the page (requires server mode — call a `/rescan` endpoint)
   - [x] Unknown folder detection Part 1: when `scan.js` finds a folder not in `FOLDER_METADATA`, flag it prominently in both terminal (yellow warning block) and HTML (amber banner) output
+  - [ ] 🟢 Unknown folder detection: add "Open Folder" link in the HTML amber warning banner so the user can navigate directly to the unrecognized folder in Finder/Explorer
   - [ ] 🔴 Unknown folder detection Part 2: AI-assisted update workflow — Claude evaluates the new folder, determines importance/description, finds vendor docs link, updates `FOLDER_METADATA`, `README.md`, and `TASKS.md` automatically
   - [ ] 🟡 Identify stale data (old conversations, broken symlinks, empty dirs) — planned for clean.js
   - [ ] 🟡 Flag security concerns (shell snapshots with env vars, old backups) — planned for audit.js
@@ -177,6 +179,17 @@ As new folders or files appear in `~/.claude` (new Claude Code features, new MCP
 ## Ideas / Maybe Later
 
 Unconfirmed ideas — not committed to, not scoped. Parking lot for things worth thinking about. Grouped by theme.
+
+> **Every idea here requires a dedicated planning session before any implementation begins.** Do not start building directly from the notes below — use them as a starting point for scoping, design decisions, and breaking the work into tasks. Move the resulting tasks into the appropriate Phase section once planned.
+
+### Editable Folder Metadata File
+
+Currently all known-folder knowledge (importance levels, descriptions, pros/cons, docs links) is hardcoded inside `scripts/scan.js` as a JavaScript object. A non-developer cannot add or annotate a folder without editing JavaScript.
+
+- **Extract `FOLDER_METADATA` into `data/folders.md`** — a human-readable, human-editable markdown table (or structured markdown with headings per folder). `scan.js` parses the file at runtime instead of reading a hardcoded object
+- **Format to decide:** markdown table vs. one heading-per-folder with bullet fields. Table is compact; heading-per-folder is easier to read and add freeform notes to
+- **Benefits:** anyone can add an unknown folder, adjust an importance level, or add a personal note without touching JavaScript. Works well alongside the AI-assisted unknown folder workflow (Part 2) — the AI writes to the MD file, not the script
+- **README.md sync concern:** `README.md` currently documents the same folders in prose — keeping both in sync is the main design question to resolve
 
 ---
 
