@@ -92,35 +92,36 @@ The goal of Phase 2 is to build automated tools to scan, classify, and safely cl
   - [x] `--html`, `--html-only`, `--no-color` flags; auto-detects TTY for piped output
   - [x] HTML report: make folder path a clickable `file://` link that opens the folder in Finder/Explorer
   - [x] HTML report: add "Docs →" link on each card to the most relevant official Anthropic docs page (null = no link shown)
-  - [ ] HTML report: add a Refresh button that re-runs the scan and reloads the page (requires server mode — call a `/rescan` endpoint)
-  - [ ] Unknown folder detection: when `scan.js` finds a folder not in `FOLDER_METADATA`, flag it prominently and prompt the user to run an update workflow — likely AI-assisted (Claude evaluates the new folder, determines importance/description, finds vendor docs link, updates `FOLDER_METADATA`, `README.md`, and `TASKS.md`)
-  - [ ] Identify stale data (old conversations, broken symlinks, empty dirs) — planned for clean.js
-  - [ ] Flag security concerns (shell snapshots with env vars, old backups) — planned for audit.js
-  
+  - [ ] 🟡 HTML report: add a Refresh button that re-runs the scan and reloads the page (requires server mode — call a `/rescan` endpoint)
+  - [x] Unknown folder detection Part 1: when `scan.js` finds a folder not in `FOLDER_METADATA`, flag it prominently in both terminal (yellow warning block) and HTML (amber banner) output
+  - [ ] 🔴 Unknown folder detection Part 2: AI-assisted update workflow — Claude evaluates the new folder, determines importance/description, finds vendor docs link, updates `FOLDER_METADATA`, `README.md`, and `TASKS.md` automatically
+  - [ ] 🟡 Identify stale data (old conversations, broken symlinks, empty dirs) — planned for clean.js
+  - [ ] 🟡 Flag security concerns (shell snapshots with env vars, old backups) — planned for audit.js
+
 ### Cleanup Execution
 
-- [ ] `scripts/clean.js` — safe cleanup with dry-run mode
-  - [ ] `--dry-run` flag to preview what would be deleted
-  - [ ] `--only-<category>` flag (e.g., `--only-plans`, `--only-shell-snapshots`)
-  - [ ] `--older-than-days <N>` for age-based cleanup
-  - [ ] `--keep-count <N>` to keep only the most recent N items
-  - [ ] Logging: what was deleted, why, timestamp
-  - [ ] Interactive mode: confirm before deleting (optional)
+- [ ] 🔴 `scripts/clean.js` — safe cleanup with dry-run mode
+  - [ ] 🟢 `--dry-run` flag to preview what would be deleted
+  - [ ] 🟢 `--only-<category>` flag (e.g., `--only-plans`, `--only-shell-snapshots`)
+  - [ ] 🟢 `--older-than-days <N>` for age-based cleanup
+  - [ ] 🟢 `--keep-count <N>` to keep only the most recent N items
+  - [ ] 🟢 Logging: what was deleted, why, timestamp
+  - [ ] 🟡 Interactive mode: confirm before deleting (optional)
 
 ### Security Auditing
 
-- [ ] `scripts/audit.js` — check for security risks
-  - [ ] Scan `shell-snapshots/` for API keys or secrets
-  - [ ] Scan `session-env/` for leaked env vars
-  - [ ] Check `mcp-needs-auth-cache.json` for unusual external services
-  - [ ] Report: "these are OK, watch out for these, delete these for privacy"
+- [ ] 🔴 `scripts/audit.js` — check for security risks
+  - [ ] 🟡 Scan `shell-snapshots/` for API keys or secrets
+  - [ ] 🟡 Scan `session-env/` for leaked env vars
+  - [ ] 🟢 Check `mcp-needs-auth-cache.json` for unusual external services
+  - [ ] 🟡 Report: "these are OK, watch out for these, delete these for privacy"
 
 ### Documentation
 
-- [ ] `SCRIPTS.md` — user guide for running cleanup scripts
-  - [ ] How to use `--dry-run` safely
-  - [ ] Common cleanup scenarios with example commands
-  - [ ] What each script does and what it deletes
+- [ ] 🟢 `SCRIPTS.md` — user guide for running cleanup scripts
+  - [ ] 🟢 How to use `--dry-run` safely
+  - [ ] 🟢 Common cleanup scenarios with example commands
+  - [ ] 🟢 What each script does and what it deletes
 
 ---
 
@@ -300,6 +301,16 @@ Copilot is a VS Code/JetBrains extension — it doesn't have a standalone `~/.co
 2. **Found something new to do?** Add it as a new task (`- [ ]`)
 3. **Task blocked or changed scope?** Add a note inline or update the description
 4. **Whole phase complete?** Mark the phase header as `✅ COMPLETE` and add a completion date
+
+### Complexity Labels
+
+Open tasks are tagged with an effort estimate:
+
+| Label | Meaning |
+|-------|---------|
+| 🟢 Easy | Contained change, one file, less than an hour |
+| 🟡 Medium | Multiple files or moderate logic, a few hours |
+| 🔴 Hard | Multi-system, significant design decisions, or high uncertainty |
 
 Example update:
 ```

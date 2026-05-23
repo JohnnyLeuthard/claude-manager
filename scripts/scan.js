@@ -313,7 +313,7 @@ function scanFolders(claudeDir) {
 
 // ─── Terminal renderer ────────────────────────────────────────────────────────
 
-function renderTerminal(folders, { totalSize, freeableSize, htmlMode }) {
+function renderTerminal(folders, { totalSize, freeableSize, htmlMode, unknowns }) {
   const WIDTH = 70;
   const border = '═'.repeat(WIDTH);
   const divider = c('gray', '─'.repeat(WIDTH));
@@ -331,6 +331,17 @@ function renderTerminal(folders, { totalSize, freeableSize, htmlMode }) {
   const freeStr     = cb('green', '~' + formatSize(freeableSize));
   console.log('  Total size: ' + totalStr + '   Folders: ' + countStr + '   Est. freeable: ' + freeStr);
   console.log();
+
+  // Unknown folder warning
+  if (unknowns && unknowns.length > 0) {
+    const label = unknowns.length === 1 ? 'UNRECOGNIZED FOLDER DETECTED' : 'UNRECOGNIZED FOLDERS DETECTED';
+    console.log(cb('yellow', '  ⚠  ' + unknowns.length + ' ' + label));
+    for (const f of unknowns) {
+      console.log(c('gray', '     ' + f.name + '  —  Not in the documented list. Do not delete without research.'));
+    }
+    console.log(c('gray', '  Update FOLDER_METADATA in scripts/scan.js to clear this warning.'));
+    console.log();
+  }
 
   // Importance legend
   console.log('  ' + c('gray', 'Importance: ') +
@@ -387,9 +398,19 @@ function listItems(str) {
   return str.split(/,\s+/).map(s => '<li>' + escapeHtml(s.trim()) + '</li>').join('');
 }
 
-function renderHTML(folders, { totalSize, freeableSize }) {
+function renderHTML(folders, { totalSize, freeableSize, unknowns }) {
   const now = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
   const maxSize = Math.max(...folders.map(f => f.size), 1);
+
+  const unknownBanner = (!unknowns || unknowns.length === 0) ? '' : `
+  <div class="unknown-alert">
+    <div class="unknown-alert-title">⚠ ${unknowns.length} unrecognized folder${unknowns.length > 1 ? 's' : ''} found</div>
+    <p>Not in the documented folder list — may have been added by a newer Claude Code version.
+       Do not delete without research. Update <code>FOLDER_METADATA</code> in scripts/scan.js to clear this warning.</p>
+    <ul class="unknown-list">
+      ${unknowns.map(f => `<li><code>${escapeHtml(f.name)}</code> &mdash; ${escapeHtml(f.path)}</li>`).join('\n      ')}
+    </ul>
+  </div>`;
 
   const cards = folders.map(folder => {
     const colors  = IMPORTANCE_COLORS_HTML[folder.importance] || IMPORTANCE_COLORS_HTML.UNKNOWN;
@@ -530,6 +551,18 @@ function renderHTML(folders, { totalSize, freeableSize }) {
       white-space: nowrap;
     }
     footer { text-align: center; margin-top: 2.5rem; color: #94a3b8; font-size: 0.8rem; }
+    .unknown-alert {
+      background: #fffbeb;
+      border: 1px solid #f59e0b;
+      border-left: 4px solid #f59e0b;
+      border-radius: 10px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .unknown-alert-title { font-weight: 700; color: #92400e; margin-bottom: 0.5rem; font-size: 1rem; }
+    .unknown-alert p { font-size: 0.875rem; color: #78350f; margin-bottom: 0.5rem; }
+    .unknown-list { font-size: 0.85rem; color: #92400e; padding-left: 1.25rem; }
+    .unknown-list li { margin-top: 0.25rem; }
   </style>
 </head>
 <body>
@@ -552,6 +585,8 @@ function renderHTML(folders, { totalSize, freeableSize }) {
       <div class="stat-value freeable">~${escapeHtml(formatSize(freeableSize))}</div>
     </div>
   </div>
+
+  ${unknownBanner}
 
   <div class="legend">
     <span class="legend-label">Importance:</span>
@@ -643,13 +678,14 @@ function main() {
 
   const totalSize    = folders.reduce((s, f) => s + f.size, 0);
   const freeableSize = folders.reduce((s, f) => s + f.size * f.freeablePct, 0);
+  const unknowns     = folders.filter(f => f.importance === 'UNKNOWN');
 
   if (opts.showTerminal) {
-    renderTerminal(folders, { totalSize, freeableSize, htmlMode: opts.showHtml });
+    renderTerminal(folders, { totalSize, freeableSize, htmlMode: opts.showHtml, unknowns });
   }
 
   if (opts.showHtml) {
-    const html = renderHTML(folders, { totalSize, freeableSize });
+    const html = renderHTML(folders, { totalSize, freeableSize, unknowns });
     if (opts.showTerminal) {
       // --html: serve via local server so folder links work in all browsers
       serveHTML(html, claudeDir);
