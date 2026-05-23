@@ -1,5 +1,9 @@
 # The ~/.claude Folder — Complete Reference
 
+
+<video src="https://github.com/user-attachments/assets/674fc715-0b26-4d73-983a-b9e4660a9586" autoplay loop muted playsinline width="100%"></video>
+
+
 An authoritative map of everything in `~/.claude` — the system folder where Claude Code stores configuration, conversations, settings, and session data.
 
 **What is this?** A guide to understanding what's in your `~/.claude` folder, why each item exists, and what's safe to delete.
@@ -670,8 +674,4 @@ This reference guide covers **understanding** what's in `~/.claude`. Future phas
 ---
 
 **Have feedback or want to help?** See `CONTRIBUTING.md`.
-
-
-
-<video src="https://github.com/user-attachments/assets/674fc715-0b26-4d73-983a-b9e4660a9586" autoplay loop muted playsinline width="100%"></video>
 
