@@ -1,0 +1,55 @@
+# Generated output
+reports/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.yarn
+
+# Logs
+*.log
+logs/
+
+# Environment / secrets
+.env
+.env.*
+.env.local
+
+# Editor
+.idea/
+*.swp
+*.swo
+*~
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Temp / scratch
+*.tmp
+*.temp
+
+# Accidentally copied ~/.claude data
+# (this project documents ~/.claude but should never contain real data from it)
+*.jsonl
+*.claude.json
+backups/
+projects/
+session-env/
+shell-snapshots/
+telemetry/
+sessions/
+file-history/
+plans-data/

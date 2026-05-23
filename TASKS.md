@@ -85,11 +85,13 @@ The goal of Phase 2 is to build automated tools to scan, classify, and safely cl
 
 ### Scanning & Classification
 
-- [ ] `scripts/scan.js` — walk `~/.claude` and classify every item
-  - [ ] Output JSON with folder name, size, safety level, last modified date
-  - [ ] Identify stale data (old conversations, broken symlinks, empty dirs)
-  - [ ] Flag security concerns (shell snapshots with env vars, old backups, etc.)
-  - [ ] Organize by cleanup category: safe-delete, review-first, keep-always
+- [x] `scripts/scan.js` — folder dashboard: real disk sizes, importance level, freeable estimate, pros/cons of deleting
+  - [x] Terminal output with ANSI color coding (CRITICAL/HIGH/MEDIUM/LOW)
+  - [x] HTML report saved to `reports/claude-dashboard.html` (gitignored)
+  - [x] Sorted by importance then size; handles unknown folders gracefully
+  - [x] `--html`, `--html-only`, `--no-color` flags; auto-detects TTY for piped output
+  - [ ] Identify stale data (old conversations, broken symlinks, empty dirs) — planned for clean.js
+  - [ ] Flag security concerns (shell snapshots with env vars, old backups) — planned for audit.js
   
 ### Cleanup Execution
 

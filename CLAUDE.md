@@ -29,12 +29,17 @@ claude-manager/
 ├── CONTEXT.md               ← Task routing (how to navigate this project)
 ├── CONTRIBUTING.md          ← How to contribute
 ├── LICENSE                  ← MIT License
-├── scripts/                 ← Cleanup, audit, scan utilities (Phase 2, TBD)
-│   ├── scan.js             ← [planned] classify every item in ~/.claude
+├── scripts/                 ← Cleanup, audit, scan utilities (Phase 2)
+│   ├── scan.js             ← Folder dashboard — size, importance, freeable space, pros/cons
 │   ├── clean.js            ← [planned] dry-run + live cleanup
 │   └── audit.js            ← [planned] check for security risks
+├── reports/                 ← Generated output (gitignored — not committed)
 └── TASKS.md                ← Project roadmap and progress tracking
 ```
+
+## Workflow Rules
+
+- **Always update TASKS.md** when completing, adding, or changing planned work. Check off finished items, add new ones, note blockers inline.
 
 ## Core Principles
 
