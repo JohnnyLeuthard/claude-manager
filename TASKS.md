@@ -120,10 +120,10 @@ The goal of Phase 2 is to build automated tools to scan, classify, and safely cl
 
 ### Documentation
 
-- [ ] 🟢 `SCRIPTS.md` — user guide for running cleanup scripts
-  - [ ] 🟢 Explain dry-run-by-default design and how to use `--execute` intentionally
-  - [ ] 🟢 Common cleanup scenarios with example commands
-  - [ ] 🟢 What each script does and what it deletes
+- [x] `SCRIPTS.md` — user guide for running cleanup scripts
+  - [x] Explain dry-run-by-default design and how to use `--execute` intentionally
+  - [x] Common cleanup scenarios with example commands
+  - [x] What each script does and what it deletes
 
 ---
 
