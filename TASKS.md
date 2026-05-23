@@ -181,7 +181,7 @@ Unconfirmed ideas — not committed to, not scoped. Parking lot for things worth
 
 The current dashboard is read-only. A bigger vision is a full control-panel frontend — possibly as a single multi-tab HTML app served by the local Node server, or as separate purpose-built HTML files per concern.
 
-- **Tab-based layout** — top nav with tabs: Dashboard · Projects · Security · Cleanup · Reports
+- **Tab-based layout** — top nav with tabs: Dashboard · Projects · Security · Cleanup · Reports. If multi-tool support is added (see below), a tool-switcher nav above the tabs (Claude · Codex · Gemini · etc.) with each tool having its own tab set
 - **Control panel tab (or first tab)** — buttons to trigger actions: Rescan, Rebuild HTML, Run Security Audit, Open Cleanup Mode. No manual CLI needed after initial launch
 - **Separate HTML files vs. single app** — evaluate whether one multi-tab `dashboard.html` is cleaner than separate files (`security.html`, `cleanup.html`, etc.). Single file is simpler to serve; separate files are easier to scope and test independently
 - **Refresh/rescan button** — re-run the scan and reload the page without restarting the server (calls `/rescan` endpoint)
@@ -204,7 +204,7 @@ Currently `scan.js` only looks at `~/.claude`. A broader audit would cover all C
 
 ### Security & Vulnerability Report
 
-A dedicated security audit tab (or standalone `security.html`) that actively scans for risks rather than just describing them.
+A dedicated security audit tab (or standalone `security.html`) that actively scans for risks rather than just describing them. Applies to all tools if multi-tool support is added — one unified security scan across every AI tool's data folder.
 
 - **Visual risk overview** — radar/spider chart showing risk level across categories: Credential Exposure · Plaintext Secrets · Stale Sensitive Data · Permissions · Privacy. Color-coded severity (green/yellow/red)
 - **Credential scanner** — grep `shell-snapshots/`, `session-env/`, `projects/` for patterns matching API keys, tokens, passwords (regex patterns for common formats: `sk-`, `ghp_`, `AKIA`, `Bearer `, etc.)
@@ -214,6 +214,83 @@ A dedicated security audit tab (or standalone `security.html`) that actively sca
 - **Privacy exposure summary** — which projects contain the most sensitive-looking data; flag projects with no activity in 90+ days that still hold sensitive content
 - **Warning banners** — prominent alerts for critical findings (e.g., "Found possible AWS key in shell-snapshots/2025-03-14.json")
 - **Export** — save the security report as a timestamped JSON or PDF-friendly HTML for records
+
+---
+
+### Multi-Tool AI Manager (Scope Expansion)
+
+The biggest possible direction: expand beyond Claude Code to become a universal manager for all AI coding tool data folders. Each tool accumulates conversations, config, cache, and session data the same way `~/.claude` does — users have no visibility into any of them.
+
+#### Architecture Questions to Resolve First
+
+- **Project rename** — `claude-manager` makes no sense if it manages 5 tools. Options: `ai-tool-manager`, `dotai-manager`, `ai-folder-manager`, or keep `claude-manager` as the Claude-specific module inside a larger umbrella project
+- **Shared scanner core** — refactor `scan.js` into a generic `scan(rootDir, folderMetadata)` function; each tool gets its own metadata file (e.g., `tools/codex.js`, `tools/claude.js`). One runner script, swappable tool configs
+- **Tool auto-detection** — on startup, check which tools are installed (does `~/.claude` exist? `~/.codex`? `~/.gemini`?) and only show tabs for detected tools. Skip tools not installed
+- **Unified summary bar** — across all tools: total AI data on disk, total freeable, tools detected, highest-risk tool
+
+#### OpenAI Codex CLI — `~/.codex/`
+
+OpenAI's open-source Codex CLI (released 2025) stores data in `~/.codex/`. Known structure (subject to change — needs live scan to verify):
+
+- `~/.codex/` — root config and conversation history
+- Likely contains: conversation logs, config file (`config.json` or similar), cache
+- Similar risk profile to `~/.claude/projects/` — conversations may contain sensitive code, API keys pasted in chat, file contents
+- **Research needed:** live scan of `~/.codex/` to document actual subfolders, sizes, and what's safe to delete — same process used to build `README.md` for `~/.claude`
+- **Docs:** https://github.com/openai/codex
+
+#### Google Gemini CLI — `~/.gemini/`
+
+Google's Gemini CLI stores data in `~/.gemini/`. Known/suspected structure:
+
+- `~/.gemini/` — root with config and conversation history
+- Similar accumulation pattern to `~/.claude/` — grows with usage
+- **Research needed:** live scan to document actual folder structure and safety levels
+- **Docs:** https://github.com/google-gemini/gemini-cli
+
+#### Aider — `~/.aider/` and project-level files
+
+Aider is a popular open-source AI coding assistant. Its data is split:
+
+- `~/.aider/` — global config and history
+- Project-level: `.aider.conf.yml`, `.aider.tags.cache.v3/`, `.aider.chat.history.md` — these accumulate in every repo you use Aider in
+- **Privacy risk:** `.aider.chat.history.md` is a plaintext log of every conversation — often committed to repos accidentally
+- **Gitignore concern:** Aider files frequently appear in `.gitignore` violations; worth flagging if found unignored in a project scan
+- **Docs:** https://aider.chat/docs/
+
+#### Continue.dev — `~/.continue/`
+
+Continue is a VS Code / JetBrains AI coding extension. Data lives in:
+
+- `~/.continue/` — config, models, conversation history
+- `config.json` — model configuration including API keys (high risk if exposed)
+- **Research needed:** live scan to document actual folder structure
+- **Docs:** https://continue.dev/docs
+
+#### Cursor — `~/Library/Application Support/Cursor/` (macOS)
+
+Cursor is an AI-powered code editor (fork of VS Code). Its data is in the macOS Application Support folder rather than home directory, making it harder to find:
+
+- macOS: `~/Library/Application Support/Cursor/`
+- Contains: workspace storage, extension data, logs, cached models
+- Much larger than CLI tools — Cursor caches models and extensions like a full editor
+- **Research needed:** live scan to identify what's safe to delete vs. needed for Cursor to run
+- **Docs:** https://cursor.com/
+
+#### GitHub Copilot
+
+Copilot is a VS Code/JetBrains extension — it doesn't have a standalone `~/.copilot/` folder. Data is stored inside VS Code's extension data:
+
+- macOS: `~/Library/Application Support/Code/User/globalStorage/github.copilot*/`
+- Low standalone value to audit separately — better handled as part of a "VS Code data" scan
+- Telemetry and auth tokens are the main concern
+
+#### Other Tools to Evaluate Later
+
+- **Amazon Q Developer** (formerly CodeWhisperer) — AWS config related
+- **Tabnine** — VS Code extension data
+- **Cody** (Sourcegraph) — VS Code extension, local cache
+- **Cline / Roo** — VS Code extension, stores conversation history locally
+- **Windsurf** (Codeium) — standalone editor, similar to Cursor
 
 ---
 
