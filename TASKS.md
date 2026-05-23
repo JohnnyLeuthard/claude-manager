@@ -2,7 +2,7 @@
 
 Living checklist of work completed, in progress, and planned for the `claude-manager/` project.
 
-**Last updated:** May 23, 2026
+**Last updated:** May 23, 2026 (repo live)
 
 ---
 
@@ -38,11 +38,11 @@ The goal of Phase 0 was to prepare `claude-manager` for public sharing.
 
 ### Repo Preparation
 
-- [ ] Move workspace from `my-workflows-private/claude-manager/` to `/my-workflows/claude-manager/` (TBD — may keep in private for now)
-- [ ] Initialize as standalone git repo with own GitHub remote (TBD)
-- [ ] Create GitHub repo: `github.com/johnnyleuthard/claude-manager`
-- [ ] Push to public GitHub
-- [ ] Add to `my-workflows-public/README.md` as showcase item (link to public repo)
+- [x] Move workspace from `my-workflows-private/claude-manager/` to `/my-workflows/claude-manager/`
+- [x] Initialize as standalone git repo with own GitHub remote
+- [x] Create GitHub repo: `github.com/JohnnyLeuthard/claude-manager`
+- [x] Push to public GitHub
+- [x] Add to `my-workflows-public/README.md` as showcase item (link to public repo)
 
 ---
 
@@ -90,6 +90,10 @@ The goal of Phase 2 is to build automated tools to scan, classify, and safely cl
   - [x] HTML report saved to `reports/claude-dashboard.html` (gitignored)
   - [x] Sorted by importance then size; handles unknown folders gracefully
   - [x] `--html`, `--html-only`, `--no-color` flags; auto-detects TTY for piped output
+  - [x] HTML report: make folder path a clickable `file://` link that opens the folder in Finder/Explorer
+  - [x] HTML report: add "Docs →" link on each card to the most relevant official Anthropic docs page (null = no link shown)
+  - [ ] HTML report: add a Refresh button that re-runs the scan and reloads the page (requires server mode — call a `/rescan` endpoint)
+  - [ ] Unknown folder detection: when `scan.js` finds a folder not in `FOLDER_METADATA`, flag it prominently and prompt the user to run an update workflow — likely AI-assisted (Claude evaluates the new folder, determines importance/description, finds vendor docs link, updates `FOLDER_METADATA`, `README.md`, and `TASKS.md`)
   - [ ] Identify stale data (old conversations, broken symlinks, empty dirs) — planned for clean.js
   - [ ] Flag security concerns (shell snapshots with env vars, old backups) — planned for audit.js
   
@@ -164,6 +168,52 @@ Every file in `~/.claude` is documented for safety level. The scripts all suppor
 
 ### Extensibility
 As new folders or files appear in `~/.claude` (new Claude Code features, new MCP services, etc.), update `README.md` with the new item. The checklist here helps track what's been audited and what needs review.
+
+---
+
+## Ideas / Maybe Later
+
+Unconfirmed ideas — not committed to, not scoped. Parking lot for things worth thinking about. Grouped by theme.
+
+---
+
+### Interactive HTML Frontend
+
+The current dashboard is read-only. A bigger vision is a full control-panel frontend — possibly as a single multi-tab HTML app served by the local Node server, or as separate purpose-built HTML files per concern.
+
+- **Tab-based layout** — top nav with tabs: Dashboard · Projects · Security · Cleanup · Reports
+- **Control panel tab (or first tab)** — buttons to trigger actions: Rescan, Rebuild HTML, Run Security Audit, Open Cleanup Mode. No manual CLI needed after initial launch
+- **Separate HTML files vs. single app** — evaluate whether one multi-tab `dashboard.html` is cleaner than separate files (`security.html`, `cleanup.html`, etc.). Single file is simpler to serve; separate files are easier to scope and test independently
+- **Refresh/rescan button** — re-run the scan and reload the page without restarting the server (calls `/rescan` endpoint)
+- **Cleanup tab** — surface LOW/safe-to-delete folders with checkboxes, dry-run preview, and a confirm-to-delete button; powered by a `/delete?path=...` server endpoint
+- **Scan history tab** — save each scan as a timestamped JSON in `reports/history/`; display a timeline showing how `~/.claude` has grown over time
+- **AI-assisted unknown folder workflow** — when scan finds a folder not in `FOLDER_METADATA`, flag it and offer to invoke Claude via API to research it, write the description, assign importance, find vendor docs, and update `FOLDER_METADATA` + `README.md` automatically
+
+---
+
+### Full Claude Folder Audit (Scope Expansion)
+
+Currently `scan.js` only looks at `~/.claude`. A broader audit would cover all Claude-related folders across the system.
+
+- **System-wide Claude folder discovery** — scan beyond `~/.claude` to find all Claude-managed directories: workflow roots, workspace `CLAUDE.md` files, project-level `.claude/` folders, MCP config locations
+- **Projects tab** — list every project folder inside `~/.claude/projects/` with metadata: last accessed date, size, number of sessions, whether a `CLAUDE.md` exists. Checkboxes to select projects for audit or deletion
+- **Per-project audit** — click into any project to see its conversation sessions, memory files, file-history snapshots, and todos. Show what's stale vs. active
+- **Cross-project summary** — total sessions, total size, oldest untouched project, top 5 largest projects
+
+---
+
+### Security & Vulnerability Report
+
+A dedicated security audit tab (or standalone `security.html`) that actively scans for risks rather than just describing them.
+
+- **Visual risk overview** — radar/spider chart showing risk level across categories: Credential Exposure · Plaintext Secrets · Stale Sensitive Data · Permissions · Privacy. Color-coded severity (green/yellow/red)
+- **Credential scanner** — grep `shell-snapshots/`, `session-env/`, `projects/` for patterns matching API keys, tokens, passwords (regex patterns for common formats: `sk-`, `ghp_`, `AKIA`, `Bearer `, etc.)
+- **`.env` file detection** — scan conversation transcripts for `.env` file contents pasted into chat; flag any session that appears to contain env var blocks
+- **Plaintext secrets in conversations** — scan `.jsonl` conversation files for high-entropy strings, common secret patterns, and known credential prefixes
+- **Checklist-style report** — each finding is a row with severity badge, file path, line snippet (truncated), and a recommended action (delete file / rotate credential / review)
+- **Privacy exposure summary** — which projects contain the most sensitive-looking data; flag projects with no activity in 90+ days that still hold sensitive content
+- **Warning banners** — prominent alerts for critical findings (e.g., "Found possible AWS key in shell-snapshots/2025-03-14.json")
+- **Export** — save the security report as a timestamped JSON or PDF-friendly HTML for records
 
 ---
 

@@ -4,6 +4,7 @@
 const fs   = require('fs');
 const path = require('path');
 const os   = require('os');
+const http = require('http');
 const { spawnSync } = require('child_process');
 
 // ─── Metadata ────────────────────────────────────────────────────────────────
@@ -16,6 +17,7 @@ const FOLDER_METADATA = {
     freeablePct:   0.0,
     proDelete:     'Reduces backup clutter',
     conDelete:     'Lose ability to roll back config changes',
+    docsUrl:       'https://code.claude.com/docs/en/settings',
   },
   cache: {
     importance:    'LOW',
@@ -24,6 +26,7 @@ const FOLDER_METADATA = {
     freeablePct:   1.0,
     proDelete:     'Instant space recovery, no impact',
     conDelete:     'Slight slowdown on first run after deletion',
+    docsUrl:       null,
   },
   debug: {
     importance:    'LOW',
@@ -32,6 +35,7 @@ const FOLDER_METADATA = {
     freeablePct:   1.0,
     proDelete:     'No impact',
     conDelete:     'Lose debug context if actively troubleshooting',
+    docsUrl:       'https://code.claude.com/docs/en/troubleshooting',
   },
   downloads: {
     importance:    'LOW',
@@ -40,6 +44,7 @@ const FOLDER_METADATA = {
     freeablePct:   1.0,
     proDelete:     'No impact',
     conDelete:     'None',
+    docsUrl:       null,
   },
   'file-history': {
     importance:    'MEDIUM',
@@ -48,6 +53,7 @@ const FOLDER_METADATA = {
     freeablePct:   0.7,
     proDelete:     'Significant space recovery',
     conDelete:     'Lose undo history for older edit sessions',
+    docsUrl:       null,
   },
   ide: {
     importance:    'LOW',
@@ -56,6 +62,7 @@ const FOLDER_METADATA = {
     freeablePct:   1.0,
     proDelete:     'No impact, regenerated automatically',
     conDelete:     'None',
+    docsUrl:       'https://code.claude.com/docs/en/ide-integrations',
   },
   plans: {
     importance:    'MEDIUM',
@@ -64,6 +71,7 @@ const FOLDER_METADATA = {
     freeablePct:   0.7,
     proDelete:     'Cleaner workspace, space recovery',
     conDelete:     'Lose plan history from past sessions',
+    docsUrl:       'https://code.claude.com/docs/en/overview',
   },
   plugins: {
     importance:    'HIGH',
@@ -72,6 +80,7 @@ const FOLDER_METADATA = {
     freeablePct:   0.5,
     proDelete:     'Slimmer install footprint',
     conDelete:     'Re-downloads marketplace data on next update check, installed plugins may need reinstall',
+    docsUrl:       'https://code.claude.com/docs/en/plugins',
   },
   projects: {
     importance:    'CRITICAL',
@@ -80,6 +89,7 @@ const FOLDER_METADATA = {
     freeablePct:   0.7,
     proDelete:     'Massive space savings, privacy improvement',
     conDelete:     'Lose conversation history and session context continuity',
+    docsUrl:       'https://code.claude.com/docs/en/memory',
   },
   'session-env': {
     importance:    'LOW',
@@ -88,6 +98,7 @@ const FOLDER_METADATA = {
     freeablePct:   1.0,
     proDelete:     'No impact, regenerated automatically',
     conDelete:     'None',
+    docsUrl:       null,
   },
   sessions: {
     importance:    'LOW',
@@ -96,6 +107,7 @@ const FOLDER_METADATA = {
     freeablePct:   1.0,
     proDelete:     'No impact, regenerated automatically',
     conDelete:     'None',
+    docsUrl:       null,
   },
   'shell-snapshots': {
     importance:    'LOW',
@@ -104,6 +116,7 @@ const FOLDER_METADATA = {
     freeablePct:   1.0,
     proDelete:     'Space recovery and privacy improvement (may contain secrets in env vars)',
     conDelete:     'None — regenerated automatically',
+    docsUrl:       null,
   },
   skills: {
     importance:    'HIGH',
@@ -112,6 +125,7 @@ const FOLDER_METADATA = {
     freeablePct:   0.0,
     proDelete:     'None',
     conDelete:     'All custom skills stop working until reinstalled',
+    docsUrl:       'https://code.claude.com/docs/en/slash-commands',
   },
   telemetry: {
     importance:    'LOW',
@@ -120,6 +134,7 @@ const FOLDER_METADATA = {
     freeablePct:   1.0,
     proDelete:     'No impact (events were already queued, will not be sent)',
     conDelete:     'None',
+    docsUrl:       null,
   },
   todos: {
     importance:    'HIGH',
@@ -128,6 +143,7 @@ const FOLDER_METADATA = {
     freeablePct:   0.5,
     proDelete:     'Cleaner state, slight space recovery',
     conDelete:     'Lose todo history from past sessions',
+    docsUrl:       null,
   },
 };
 
@@ -383,8 +399,9 @@ function renderHTML(folders, { totalSize, freeableSize }) {
       <div class="card-header">
         <span class="folder-name">${escapeHtml(folder.name)}</span>
         <span class="badge" style="background:${colors.badge}">${escapeHtml(folder.importance)}</span>
+        ${folder.docsUrl ? `<a class="docs-link" href="${escapeHtml(folder.docsUrl)}" target="_blank" rel="noopener">Docs →</a>` : ''}
       </div>
-      <div class="card-path">${escapeHtml(folder.path)}</div>
+      <div class="card-path"><a href="#" onclick="openFolder(this.dataset.path);return false;" data-path="${escapeHtml(folder.path)}" title="Open in Finder">${escapeHtml(folder.path)}</a></div>
       <div class="card-size-row">
         <span class="card-size">${escapeHtml(folder.sizeFormatted)}</span>
         <div class="progress-wrap">
@@ -479,6 +496,10 @@ function renderHTML(folders, { totalSize, freeableSize }) {
       color: #64748b;
       word-break: break-all;
     }
+    .card-path a { color: #64748b; text-decoration: none; border-bottom: 1px dashed #94a3b8; }
+    .card-path a:hover { color: #3b82f6; border-bottom-color: #3b82f6; }
+    .docs-link { font-size: 0.7rem; color: #3b82f6; text-decoration: none; white-space: nowrap; opacity: 0.7; }
+    .docs-link:hover { opacity: 1; text-decoration: underline; }
     .card-size-row { display: flex; align-items: center; gap: 1rem; }
     .card-size { font-size: 1.25rem; font-weight: 700; white-space: nowrap; }
     .progress-wrap { flex: 1; height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; }
@@ -545,8 +566,70 @@ function renderHTML(folders, { totalSize, freeableSize }) {
   </main>
 
   <footer>Generated by <strong>claude-manager</strong> &mdash; ${escapeHtml(now)}</footer>
+
+  <script>
+    function openFolder(p) {
+      fetch('/open?path=' + encodeURIComponent(p)).catch(function() {
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(p).then(function() { toast('Path copied to clipboard'); });
+        }
+      });
+    }
+    function toast(msg) {
+      var el = document.createElement('div');
+      el.textContent = msg;
+      el.style.cssText = 'position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:.5rem 1.25rem;border-radius:6px;font-size:.8rem;z-index:999;pointer-events:none;';
+      document.body.appendChild(el);
+      setTimeout(function() { el.remove(); }, 2500);
+    }
+  </script>
 </body>
 </html>`;
+}
+
+// ─── Local server (makes folder-open links work in all browsers) ──────────────
+
+function serveHTML(html, claudeDir) {
+  const server = http.createServer((req, res) => {
+    if (req.method === 'GET' && req.url === '/') {
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+      res.end(html);
+      return;
+    }
+
+    if (req.method === 'GET' && req.url.startsWith('/open?')) {
+      const urlObj = new URL(req.url, 'http://localhost');
+      const folderPath = urlObj.searchParams.get('path');
+      if (folderPath && folderPath.startsWith(claudeDir)) {
+        const openCmd = os.platform() === 'darwin' ? 'open' : 'xdg-open';
+        spawnSync(openCmd, [folderPath]);
+        res.writeHead(200, { 'Content-Type': 'text/plain' });
+        res.end('ok');
+      } else {
+        res.writeHead(403, { 'Content-Type': 'text/plain' });
+        res.end('forbidden');
+      }
+      return;
+    }
+
+    res.writeHead(404);
+    res.end('not found');
+  });
+
+  server.listen(0, '127.0.0.1', () => {
+    const port = server.address().port;
+    const url  = 'http://localhost:' + port;
+    console.log('  Dashboard running at ' + url);
+    console.log('  Press Ctrl+C to stop.\n');
+    const openCmd = os.platform() === 'darwin' ? 'open' : 'xdg-open';
+    spawnSync(openCmd, [url]);
+  });
+
+  // Auto-exit after 10 minutes
+  setTimeout(() => {
+    console.log('\n  Server stopped after 10 minutes.');
+    process.exit(0);
+  }, 10 * 60 * 1000);
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
@@ -567,15 +650,20 @@ function main() {
 
   if (opts.showHtml) {
     const html = renderHTML(folders, { totalSize, freeableSize });
-    try {
-      fs.writeFileSync(opts.htmlPath, html, 'utf-8');
-      const msg = 'HTML report saved to: ' + opts.htmlPath;
-      console.log(opts.showTerminal ? '  ' + msg : msg);
-      const openCmd = os.platform() === 'darwin' ? 'open' : 'xdg-open';
-      spawnSync(openCmd, [opts.htmlPath], { detached: true, stdio: 'ignore' });
-    } catch (e) {
-      console.error('Error writing HTML file: ' + e.message);
-      process.exit(1);
+    if (opts.showTerminal) {
+      // --html: serve via local server so folder links work in all browsers
+      serveHTML(html, claudeDir);
+    } else {
+      // --html-only: write static file (folder links fall back to clipboard copy)
+      try {
+        fs.writeFileSync(opts.htmlPath, html, 'utf-8');
+        console.log('HTML report saved to: ' + opts.htmlPath);
+        const openCmd = os.platform() === 'darwin' ? 'open' : 'xdg-open';
+        spawnSync(openCmd, [opts.htmlPath], { detached: true, stdio: 'ignore' });
+      } catch (e) {
+        console.error('Error writing HTML file: ' + e.message);
+        process.exit(1);
+      }
     }
   }
 }
