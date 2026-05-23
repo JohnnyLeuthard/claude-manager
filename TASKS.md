@@ -100,13 +100,15 @@ The goal of Phase 2 is to build automated tools to scan, classify, and safely cl
 
 ### Cleanup Execution
 
-- [ ] 🔴 `scripts/clean.js` — safe cleanup with dry-run mode
-  - [ ] 🟢 `--dry-run` flag to preview what would be deleted
+- [ ] 🔴 `scripts/clean.js` — safe cleanup; **dry-run is the default**
+  - Design decision: running `clean.js` with no flags always previews what would be deleted and does nothing. Deletion requires the explicit `--execute` flag — making destructive action intentional, not accidental.
+  - [ ] 🟢 Dry-run output by default — shows what would be deleted, sizes, and why; no files touched
+  - [ ] 🟢 `--execute` flag to perform actual deletion (must be explicit)
   - [ ] 🟢 `--only-<category>` flag (e.g., `--only-plans`, `--only-shell-snapshots`)
   - [ ] 🟢 `--older-than-days <N>` for age-based cleanup
   - [ ] 🟢 `--keep-count <N>` to keep only the most recent N items
-  - [ ] 🟢 Logging: what was deleted, why, timestamp
-  - [ ] 🟡 Interactive mode: confirm before deleting (optional)
+  - [ ] 🟢 Logging: what was deleted, why, timestamp (only written when `--execute` is used)
+  - [ ] 🟡 Interactive mode: confirm each deletion before proceeding (only active with `--execute`)
 
 ### Security Auditing
 
@@ -119,7 +121,7 @@ The goal of Phase 2 is to build automated tools to scan, classify, and safely cl
 ### Documentation
 
 - [ ] 🟢 `SCRIPTS.md` — user guide for running cleanup scripts
-  - [ ] 🟢 How to use `--dry-run` safely
+  - [ ] 🟢 Explain dry-run-by-default design and how to use `--execute` intentionally
   - [ ] 🟢 Common cleanup scenarios with example commands
   - [ ] 🟢 What each script does and what it deletes
 
@@ -145,8 +147,8 @@ The goal of Phase 3 is to build a user-friendly UI for browsing and managing `~/
 
 - [ ] Click on any folder to see README.md details in a sidebar
 - [ ] Inline "Mark for deletion" checkbox for easy selection
-- [ ] "Preview what would be deleted" button to run `--dry-run`
-- [ ] "Actually delete" button to execute cleanup
+- [ ] "Preview what would be deleted" button — runs `clean.js` (dry-run is the default, no flag needed)
+- [ ] "Actually delete" button — runs `clean.js --execute` (explicit, intentional)
 - [ ] Undo/rollback option (if backed up first)
 
 ### Distribution
@@ -165,7 +167,7 @@ The map (README.md) is the foundation. Without it, any cleanup scripts are flyin
 Scripts are more useful than UI. A user with a script can cleanup immediately. UI is nice-to-have but not blocking.
 
 ### Security-First Approach
-Every file in `~/.claude` is documented for safety level. The scripts all support `--dry-run` before making actual changes. Cleanup is always opt-in.
+Every file in `~/.claude` is documented for safety level. Cleanup scripts are dry-run by default — they preview what would be deleted and do nothing until `--execute` is passed explicitly. Destructive action is always intentional, never accidental.
 
 ### Extensibility
 As new folders or files appear in `~/.claude` (new Claude Code features, new MCP services, etc.), update `README.md` with the new item. The checklist here helps track what's been audited and what needs review.
