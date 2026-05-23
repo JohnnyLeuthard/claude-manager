@@ -207,6 +207,23 @@ The current dashboard is read-only. A bigger vision is a full control-panel fron
 
 ---
 
+### Projects Folder Deep Dive
+
+The `~/.claude/projects/` folder is almost always the largest item in `~/.claude` — it holds every conversation transcript for every project you've ever used Claude Code in. Right now `scan.js` only shows its total size. There is no visibility into what's actually inside.
+
+**The goal:** give users a clear picture of what's in `projects/` — which projects exist, how much space each takes, when they were last active, and what can safely be deleted.
+
+**Open questions for the planning session:**
+- Separate script (`scripts/projects.js`) or a new flag on `scan.js` (e.g., `node scripts/scan.js --projects`)?
+- Separate tab in the HTML dashboard, or inline expansion on the `projects/` card?
+- How deep to go: folder list + sizes only, or read into `.jsonl` files for session counts and last-message timestamps?
+- Privacy consideration: conversation content is sensitive — the tool should never display transcript text, only metadata (size, date, session count)
+- Deletion: surface old/inactive projects as candidates for `clean.js`, not delete directly from this view
+
+**Known structure inside `projects/`:** each subfolder is a project, named by a hash or path slug. Inside each: one or more `.jsonl` files (conversation transcripts), possibly a `memory/` subfolder, possibly a `.claude/` subfolder.
+
+---
+
 ### Full Claude Folder Audit (Scope Expansion)
 
 Currently `scan.js` only looks at `~/.claude`. A broader audit would cover all Claude-related folders across the system.
