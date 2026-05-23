@@ -28,7 +28,11 @@ node scripts/scan.js
 
 Prints a color-coded terminal report. Unknown folders (not in the documented list) are flagged with a warning at the top.
 
-> **The report is a point-in-time snapshot.** Sizes reflect the moment you ran the scan. If you delete files, re-run the script to see updated numbers.
+> **Sizes are live — read from disk every run.** If you delete files and re-run, the numbers update. The report does not auto-refresh; it reflects the state of `~/.claude` at the moment you ran the command.
+
+**What's live vs. what's hardcoded:**
+- **Live (read from disk):** which folders exist, actual folder sizes
+- **Hardcoded:** descriptions, importance levels, pros/cons, docs links — the documented knowledge built into the script
 
 ### Flags
 
