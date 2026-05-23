@@ -1,0 +1,657 @@
+# The ~/.claude Folder — Complete Reference
+
+An authoritative map of everything in `~/.claude` — the system folder where Claude Code stores configuration, conversations, settings, and session data.
+
+**What is this?** A guide to understanding what's in your `~/.claude` folder, why each item exists, and what's safe to delete.
+
+**Who is this for?** Anyone using Claude Code who wants to understand their `.claude` folder structure and manage it responsibly.
+
+---
+
+## Quick Start
+
+1. **Is this your first time here?** Read the "Quick Summary" section below to understand what's in `~/.claude`.
+2. **Want to clean up old data?** Jump to "Cleanup Recommendations" for immediate, safe actions.
+3. **Curious about a specific folder?** Use "Folder Reference" to understand what it contains.
+4. **Concerned about privacy/security?** Search this page for "Security notes" in any section.
+
+---
+
+## Quick Summary
+
+Your `~/.claude` folder typically contains (size varies by usage):
+
+- **Conversations** (typically 10–50 MB) — Full history of Claude Code sessions, stored per-project
+- **Configuration** (< 1 MB) — Settings, backups, hooks, installed plugins, MCP auth cache
+- **Session ephemera** (1–5 MB) — File-edit snapshots, shell environment captures, active session locks
+- **Plans** (50–200 KB) — Plan-mode session files from past planning sessions
+- **Telemetry & temp** (< 1 MB) — Failed telemetry retries, broken symlinks, empty placeholders
+
+**Typical total size:** 10–60 MB, depending on how much you use Claude Code.
+
+**Largest consumers** (varies):
+1. `projects/` — conversation histories (the bulk of the folder)
+2. `plugins/` — cached plugin marketplace data
+3. `file-history/` — file edit snapshots for undo/redo
+4. Everything else combined — < 5 MB
+
+---
+
+## Folder Reference
+
+Each section below covers one folder in `~/.claude`. For each, you'll find:
+- **What it is** — what the folder contains and why Claude Code creates it
+- **Safety level** — one of:
+  - `system` = don't touch, Claude Code needs it
+  - `session-temp` = safe to delete after sessions end
+  - `accumulates` = grows indefinitely, safe to prune old data
+  - `review-first` = contains sensitive data, review before deleting
+- **Security notes** — any personal data, tokens, or service identifiers that might be present
+- **Grows?** — whether it accumulates indefinitely or auto-cleans
+- **Action** — what to do with old data
+
+---
+
+### backups/
+
+**What it is:** Timestamped backups of `.claude.json` (your main Claude Code config file).
+
+**Why it exists:** Claude Code auto-saves your config periodically, so you can roll back if something goes wrong.
+
+**Contents:**
+- Multiple backup files, named by Unix timestamp, each 40–50 KB
+- Typically keeps the last few hours of backups
+
+**What's in `.claude.json`:**
+- Your global settings (model selection, UI preferences, enabled plugins)
+- Workspace-level settings per project
+- Hooks configuration (automated behaviors when you save/build/etc.)
+- Permission overrides
+- API keys and tokens for integrated services — **stored encrypted**
+
+**Safety level:** `review-first`
+
+**Security notes:**
+- Your config file is encrypted on disk, so these backups are also encrypted
+- Contains references to which external services are connected (GitHub, Slack, etc.)
+- If your machine is physically compromised, these could potentially be decrypted
+
+**Grows?** Yes, accumulates indefinitely. Claude creates a new backup roughly every 10–15 minutes.
+
+**Action:**
+- Keep the last 1–2 backups (in case you need to roll back recent config changes)
+- Delete backups older than 1–2 weeks — you're unlikely to need them
+- If you never change your config, you can delete all of these safely
+
+---
+
+### cache/
+
+**What it is:** Cached data fetched from external sources (changelog, GitHub data, etc.).
+
+**Why it exists:** To avoid re-fetching the same data every session.
+
+**Contents:**
+- Claude Code changelog (for the update notification feature)
+- Cached GitHub issues lists (if you've used GitHub-connected features)
+
+**Safety level:** `session-temp`
+
+**Security notes:**
+- No personal data or tokens
+- Safe to share
+
+**Grows?** Slowly, only when new releases or GitHub data are fetched.
+
+**Action:** Safe to delete entirely — will be regenerated next time you open Claude Code.
+
+---
+
+### debug/
+
+**What it is:** Debug logs and symlinks to recent logs.
+
+**Why it exists:** For troubleshooting Claude Code issues.
+
+**Contents:**
+- May contain broken symlinks (old logs no longer exist)
+- Actual debug log files (if you've had issues)
+
+**Safety level:** `session-temp`
+
+**Security notes:**
+- Debug logs may contain code snippets and file paths from your sessions
+- No personal data or API keys in normal operation
+
+**Grows?** Slowly, if you have issues that generate logs.
+
+**Action:**
+- Safe to delete broken symlinks
+- Safe to delete old debug logs after a month (keep recent ones for troubleshooting)
+
+---
+
+### downloads/
+
+**What it is:** Placeholder directory for file downloads during Claude Code sessions.
+
+**Why it exists:** Reserved for future use or specific workflows.
+
+**Contents:** Usually empty.
+
+**Safety level:** `system` (placeholder)
+
+**Grows?** No, typically unused.
+
+**Action:** Ignore or leave as-is.
+
+---
+
+### file-history/
+
+**What it is:** Versioned snapshots of files you edited during Claude Code sessions.
+
+**Why it exists:** So Claude Code can revert your file edits if something goes wrong.
+
+**Contents:**
+- One subdirectory per file you edited (named with a UUID)
+- Inside each: multiple versioned snapshots (e.g., `abc123@v1`, `abc123@v2`, etc.)
+- Total accumulation: 1–5 MB depending on usage
+
+**Safety level:** `session-temp`
+
+**Security notes:**
+- Contains snapshots of files you edited — may include code, secrets, or personal notes
+- These are stale once a session ends (only useful for in-session undo/redo)
+- If you're concerned about privacy, delete periodically
+
+**Grows?** Yes, accumulates one directory per file you edit in a session.
+
+**Action:**
+- Safe to delete after sessions are archived
+- Delete snapshots older than 1–2 weeks if concerned about storage or privacy
+- Best practice: clean these up quarterly
+
+---
+
+### ide/
+
+**What it is:** Lock files for active IDE connections (VS Code, Claude desktop app, etc.).
+
+**Why it exists:** So Claude Code knows which IDE instances are currently connected.
+
+**Contents:**
+- Lock files named by process ID
+
+**Safety level:** `system` (active)
+
+**Grows?** No, only one lock file per active IDE instance.
+
+**Action:**
+- Do not delete while an IDE is running — Claude Code needs this
+- Safe to delete stale lock files (processes that are no longer running)
+
+---
+
+### plans/
+
+**What it is:** Markdown files from past plan-mode sessions.
+
+**Why it exists:** When you use plan mode, Claude Code persists the plan so you can review it later.
+
+**Contents:**
+- Plan files with auto-generated names (one per plan-mode session)
+- Each file is 5–30 KB
+
+**Safety level:** `accumulates`
+
+**Security notes:**
+- May contain code snippets, file paths, and implementation details
+- No API keys expected, but check if concerned
+
+**Grows?** Yes, one file per plan-mode session.
+
+**Action:**
+- Keep plans for active or recent projects — useful for reference
+- Delete plans for completed or abandoned projects — they're just clutter after that
+- Decision rule: if you remember why the project was important, keep it; otherwise delete
+- Keep the most recent 5–10 plans; delete older ones
+
+---
+
+### plugins/
+
+**What it is:** Installed plugins, marketplace metadata, blocklist, and cached plugin data.
+
+**Why it exists:** Claude Code supports third-party plugins for extended functionality.
+
+**Contents:**
+- `installed_plugins.json` — your installed plugins
+- `known_marketplaces.json` — registered plugin marketplaces
+- `blocklist.json` — plugins you've blocked
+- `cache/` and `marketplaces/` — cached marketplace data
+- `data/` — individual plugin data directories
+
+**Safety level:** `accumulates` (partially)
+
+**Security notes:**
+- The blocklist reveals which plugins you've disabled
+- Marketplace caches are public data
+- No API keys or sensitive data expected
+
+**Grows?** Yes, but slowly. New cache entries added when you browse marketplaces.
+
+**Action:**
+- Keep `installed_plugins.json` — you need this for your configured plugins to work
+- Keep `blocklist.json` — your persistent blocklist preference
+- Delete `cache/` and `marketplaces/` subdirectories — safe to delete, regenerated automatically
+- These subdirectories can be 1–5 MB, so cleaning them saves space
+
+---
+
+### projects/
+
+**What it is:** Conversation history for every Claude Code project you've worked on.
+
+**Why it exists:** Claude Code stores the full conversation history so you can review past sessions.
+
+**Contents:**
+- Subdirectories for each project you've opened (named by the project path)
+- `.jsonl` files — one per session, containing the full conversation transcript
+- `memory/` subdirectories — persistent memory files per project (feedback, preferences, references)
+
+**Safety level:** `review-first` (this is your core data)
+
+**Security notes:**
+- Each `.jsonl` conversation file contains the full transcript of a session
+- May include code, credentials, file contents, personal notes, and sensitive information
+- Conversation transcripts are the most sensitive data in `~/.claude`
+
+**Grows?** Yes, one `.jsonl` file per session, indefinitely.
+
+**Action:**
+- **Keep active projects** — these are your working history
+- **Review old projects** — if you're not working on them anymore, consider archiving or deleting
+- **Decision rule:**
+  - Keep projects you've worked on in the last 3–6 months
+  - Archive old projects to encrypted backup if you value the history
+  - Delete projects you've abandoned (reclaims space and reduces privacy risk)
+- **Per-project cleanup:** keep the last 5 sessions, delete older ones
+- **Memory files:** keep even if you delete old conversation files (contains your notes and preferences)
+
+---
+
+### sessions/
+
+**What it is:** JSON files tracking currently active Claude Code sessions.
+
+**Why it exists:** So Claude Code knows which IDE instances are currently connected.
+
+**Contents:**
+- One JSON file per active session (VS Code, Claude desktop, terminal, etc.)
+
+**Safety level:** `system` (active)
+
+**Security notes:**
+- Contains your current working directory paths
+- No sensitive data beyond file paths
+
+**Grows?** No, only one file per active session.
+
+**Action:**
+- Do not delete while sessions are active
+- Safe to delete after all Claude Code instances are closed
+- Safe to delete stale session files (older than a few hours)
+
+---
+
+### session-env/
+
+**What it is:** Environment state snapshots for active sessions.
+
+**Why it exists:** So Claude Code can replicate your shell environment across IDE/terminal boundaries.
+
+**Contents:**
+- UUID-named subdirectories storing environment variables, PATH, etc.
+
+**Safety level:** `session-temp`
+
+**Security notes:**
+- Contains environment variables from your shell
+- **Risk:** if you export API keys to your shell environment, they could be captured here
+- Best practice: use config files or `.env` files instead of exporting secrets to your shell
+
+**Grows?** No, only one per active session.
+
+**Action:**
+- Safe to delete after sessions end
+- If you see UUID directories older than a few hours, delete them
+- Review if you have API keys in your shell environment (you shouldn't)
+
+---
+
+### shell-snapshots/
+
+**What it is:** Full captures of your shell environment at session start.
+
+**Why it exists:** So Claude Code can replicate your shell aliases, functions, and environment settings.
+
+**Contents:**
+- Timestamped shell environment snapshots (e.g., zsh/bash environment dumps)
+- Typically 100–200 KB each
+
+**Safety level:** `session-temp`
+
+**Security notes:**
+- Contains function definitions, aliases, and environment variables
+- May include sensitive shell setup if you have API keys or secrets in aliases
+- If you have aliases that reference API keys, they could be captured here
+
+**Grows?** Yes, one snapshot per session.
+
+**Action:**
+- Safe to delete after sessions end
+- Delete snapshots older than a few days
+- If you have sensitive shell setup, review before sharing your `~/.claude` folder
+
+---
+
+### skills/
+
+**What it is:** Locally installed custom skills (Claude Code extensions).
+
+**Why it exists:** For custom skills installed locally instead of from the marketplace.
+
+**Contents:** Depends on installed skills; often empty.
+
+**Safety level:** `system`
+
+**Grows?** Yes, when you install local skills.
+
+**Action:**
+- Keep any active skills
+- Delete unused skills
+
+---
+
+### telemetry/
+
+**What it is:** Failed telemetry events waiting to be sent to Anthropic's servers.
+
+**Why it exists:** Claude Code sends usage telemetry for analytics; if the send fails, events are buffered for retry.
+
+**Contents:**
+- JSON files with pending telemetry events
+
+**Safety level:** `session-temp`
+
+**Security notes:**
+- Telemetry includes which tools you used, session duration, error counts
+- **Does NOT include** conversation content or file contents
+- Low privacy risk
+
+**Grows?** Slowly, only if sends fail (e.g., offline machine).
+
+**Action:**
+- Safe to delete (will be regenerated and retried next session)
+- If you want to disable telemetry entirely, change settings.json (don't delete these files)
+
+---
+
+### todos/
+
+**What it is:** Todo items from past agent-run sessions.
+
+**Why it exists:** When agents create todo lists, they're persisted here.
+
+**Contents:**
+- JSON files representing old todo lists
+
+**Safety level:** `accumulates`
+
+**Security notes:** None
+
+**Grows?** Yes, one file per agent todo session.
+
+**Action:**
+- Delete stale todos — if the agent session is done, you won't need the todo file
+- Keep active todos if you're currently using them
+
+---
+
+## Top-Level Files
+
+### .DS_Store
+
+**What it is:** macOS metadata file (Finder view settings, folder positions, etc.).
+
+**Safety level:** `system`
+
+**Action:** Ignore. This is auto-generated.
+
+---
+
+### .last-cleanup
+
+**What it is:** Timestamp of the last time Claude Code's auto-cleanup utility ran.
+
+**Contents:** ISO 8601 timestamp
+
+**Safety level:** `system`
+
+**Action:** Informational only. Don't edit.
+
+---
+
+### CLAUDE.md
+
+**What it is:** Global Claude Code instructions file.
+
+**Why it exists:** Acts as the system-wide fallback for Claude instructions.
+
+**Contents:** Often empty, but can contain custom global instructions.
+
+**Safety level:** `system`
+
+**Action:** Keep as-is. You can use this file to set global Claude behavior.
+
+---
+
+### history.jsonl
+
+**What it is:** REPL command history — every command you've typed at the Claude prompt.
+
+**Contents:**
+- 100–500+ lines of command history (depending on usage)
+- Includes project paths and session IDs
+
+**Safety level:** `accumulates`
+
+**Security notes:**
+- Shows which commands you run (low risk)
+- Includes project paths (low risk)
+- No actual file contents or API keys visible
+
+**Grows?** Yes, one line per command.
+
+**Action:**
+- Safe to keep or delete
+- If concerned about command history, delete every 6–12 months
+
+---
+
+### mcp-needs-auth-cache.json
+
+**What it is:** Cache of MCP (Model Context Protocol) servers requiring authentication.
+
+**Contents:**
+- Service identifiers for external services (Gmail, Slack, Google Calendar, Google Drive, etc.)
+- Timestamps showing when authentication was requested
+
+**Safety level:** `review-first`
+
+**Security notes:**
+- **Does NOT contain** API keys or tokens (those are encrypted in `.claude.json`)
+- **Does confirm** which external services are connected to Claude Code
+- Timestamps show when you last used these services
+
+**Grows?** Slowly, only when new MCP servers are added.
+
+**Action:**
+- Safe to keep or delete
+- Deleting it won't disable MCP services; they'll be re-added when you use them next
+- If you're concerned about what external services are connected, audit this file
+
+---
+
+### settings.json
+
+**What it is:** Global Claude Code configuration.
+
+**Contents:**
+- Model selection, enabled plugins, UI preferences
+- Other global defaults
+
+**Safety level:** `system` (keep always)
+
+**Security notes:**
+- Does not contain API keys (those are in `.claude.json`)
+- Safe to share (it's just preferences)
+
+**Action:** Keep. This is your active configuration.
+
+---
+
+### stats-cache.json
+
+**What it is:** Aggregated usage statistics.
+
+**Contents:**
+- Daily message counts, session counts, tool call counts
+- Data going back several months
+
+**Safety level:** `accumulates`
+
+**Security notes:**
+- Shows when you've been active (time-of-day patterns)
+- Shows which tools you use most (harmless)
+- No content or code included
+
+**Grows?** Yes, one day per day of use.
+
+**Action:**
+- Safe to keep or delete
+- Deleting loses your usage history, but it's regenerated next session
+- No reason to delete unless you want to lose the stats
+
+---
+
+## Cleanup Recommendations
+
+### Immediate (Safe, No Risk)
+
+- [ ] Delete broken symlinks in `debug/latest` (if present)
+- [ ] Delete empty subdirectories or folders you recognize as unused
+
+**Expected cleanup:** < 100 KB
+
+### Short-term (After Sessions End)
+
+- [ ] Delete old `file-history/` directories
+  - Keep only from the last 2 weeks
+  - Savings: 1–2 MB
+- [ ] Delete old `shell-snapshots/`
+  - Keep only from the last 7 days
+  - Savings: 100–500 KB
+- [ ] Delete old `session-env/` UUID directories
+  - Keep only from current/recent sessions
+  - Savings: 100–500 KB
+
+**Expected cleanup:** 1–2 MB
+
+### Medium-term (Review Before Deleting)
+
+- [ ] Delete old `plans/` files
+  - Keep only active/important projects (keep 5–10 most recent)
+  - Savings: 50–200 KB
+- [ ] Review old `projects/` conversation histories
+  - Delete projects you've abandoned
+  - Consider archiving before deleting if you want to keep history
+  - Savings: 5–30+ MB (depends on your usage)
+
+### Long-term (Ongoing Management)
+
+- [ ] Backup before deleting projects — conversation history is valuable
+- [ ] Archive instead of delete — move old projects to an encrypted backup folder
+- [ ] Set a cleanup policy (e.g., "delete conversations older than 6 months")
+- [ ] Run cleanup scripts quarterly (once Phase 2 tools are built)
+
+---
+
+## Security Considerations
+
+### Highest Risk
+
+1. **projects/** — full conversation transcripts
+   - May contain code, credentials, prompts, file contents
+   - Most sensitive data in `~/.claude`
+   - Recommendation: encrypt backups before sharing; delete old projects regularly
+
+2. **backups/** — `.claude.json` config files (encrypted, but contains encrypted secrets)
+   - Recommendation: keep only recent backups; delete old ones
+
+3. **file-history/** — file edit snapshots
+   - May contain code or notes you edited
+   - Recommendation: delete periodically; don't share
+
+### Medium Risk
+
+- `shell-snapshots/` — your shell environment and aliases
+- `session-env/` — environment variables
+- `mcp-needs-auth-cache.json` — list of connected external services
+
+### Low Risk
+
+- `history.jsonl` — command history
+- `stats-cache.json` — usage stats
+- `cache/` — public marketplace data
+- `settings.json` — preferences
+
+---
+
+## FAQ
+
+**Q: How often should I clean up `~/.claude`?**
+A: Once a month or every few months, depending on your usage. The folder doesn't need frequent cleaning unless you're concerned about space or privacy.
+
+**Q: Can I just delete everything and start over?**
+A: Technically yes, but not recommended. You'll lose all conversation history and custom settings. Better: archive to backup, then selectively clean.
+
+**Q: Are my conversations backed up automatically?**
+A: No. `projects/` contains your full conversation history, but there's no cloud backup. Manually backup if you value the history.
+
+**Q: Can Claude Code see deleted conversations?**
+A: No. Once a `.jsonl` file is deleted, it's gone forever (unless you have a backup).
+
+**Q: Is it safe to share my `~/.claude` folder?**
+A: No. It contains sensitive data. If sharing, review and delete the `projects/` folder first, or delete everything and backup what you need.
+
+---
+
+## What's Next?
+
+This reference guide covers **understanding** what's in `~/.claude`. Future phases will include:
+
+- **Phase 2 — Cleanup Scripts**
+  - `scan.js` — automatically classify each item in `~/.claude`
+  - `clean.js` — dry-run and live cleanup with safety checks
+  - `audit.js` — check for security risks
+
+- **Phase 3 — Visual Interface**
+  - Browser/VSCode UI to visualize your `~/.claude` folder
+  - Point-and-click cleanup with dry-run preview
+  - Shareable as a standalone tool
+
+---
+
+**Have feedback or want to help?** See `CONTRIBUTING.md`.
