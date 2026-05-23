@@ -413,14 +413,19 @@ function renderHTML(folders, { totalSize, freeableSize, unknowns }) {
   </div>`;
 
   const cards = folders.map(folder => {
-    const colors  = IMPORTANCE_COLORS_HTML[folder.importance] || IMPORTANCE_COLORS_HTML.UNKNOWN;
-    const barPct  = ((folder.size / maxSize) * 100).toFixed(1);
+    const colors     = IMPORTANCE_COLORS_HTML[folder.importance] || IMPORTANCE_COLORS_HTML.UNKNOWN;
+    const barPct     = ((folder.size / maxSize) * 100).toFixed(1);
+    const searchQ    = encodeURIComponent(`~/.claude/${folder.bareName} claude code`);
+    const searchUrl  = `https://www.google.com/search?q=${searchQ}`;
     return `
     <div class="card" style="border-left-color:${colors.border}">
       <div class="card-header">
         <span class="folder-name">${escapeHtml(folder.name)}</span>
         <span class="badge" style="background:${colors.badge}">${escapeHtml(folder.importance)}</span>
-        ${folder.docsUrl ? `<a class="docs-link" href="${escapeHtml(folder.docsUrl)}" target="_blank" rel="noopener">Docs →</a>` : ''}
+        <span class="card-links">
+          ${folder.docsUrl ? `<a class="docs-link" href="${escapeHtml(folder.docsUrl)}" target="_blank" rel="noopener">Docs →</a>` : ''}
+          <a class="docs-link search-link" href="${searchUrl}" target="_blank" rel="noopener">Search Google →</a>
+        </span>
       </div>
       <div class="card-path"><a href="#" onclick="openFolder(this.dataset.path);return false;" data-path="${escapeHtml(folder.path)}" title="Open in Finder">${escapeHtml(folder.path)}</a></div>
       <div class="card-size-row">
@@ -519,8 +524,10 @@ function renderHTML(folders, { totalSize, freeableSize, unknowns }) {
     }
     .card-path a { color: #64748b; text-decoration: none; border-bottom: 1px dashed #94a3b8; }
     .card-path a:hover { color: #3b82f6; border-bottom-color: #3b82f6; }
+    .card-links { display: flex; gap: 0.5rem; align-items: center; }
     .docs-link { font-size: 0.7rem; color: #3b82f6; text-decoration: none; white-space: nowrap; opacity: 0.7; }
     .docs-link:hover { opacity: 1; text-decoration: underline; }
+    .search-link { color: #7c3aed; }
     .card-size-row { display: flex; align-items: center; gap: 1rem; }
     .card-size { font-size: 1.25rem; font-weight: 700; white-space: nowrap; }
     .progress-wrap { flex: 1; height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; }

@@ -92,7 +92,7 @@ The goal of Phase 2 is to build automated tools to scan, classify, and safely cl
   - [x] `--html`, `--html-only`, `--no-color` flags; auto-detects TTY for piped output
   - [x] HTML report: make folder path a clickable `file://` link that opens the folder in Finder/Explorer
   - [x] HTML report: add "Docs →" link on each card to the most relevant official Anthropic docs page (null = no link shown)
-  - [ ] 🟢 HTML report: add a "Search Google" link on each folder card that opens a new browser tab with a Google search for the folder name (e.g., `~/.claude/plans claude code`) — helps users research unfamiliar folders without leaving the dashboard
+  - [x] 🟢 HTML report: add a "Search Google" link on each folder card that opens a new browser tab with a Google search for the folder name (e.g., `~/.claude/plans claude code`) — helps users research unfamiliar folders without leaving the dashboard
   - [ ] 🟡 HTML report: add a Refresh button that re-runs the scan and reloads the page (requires server mode — call a `/rescan` endpoint)
   - [x] Unknown folder detection Part 1: when `scan.js` finds a folder not in `FOLDER_METADATA`, flag it prominently in both terminal (yellow warning block) and HTML (amber banner) output
   - [ ] 🟢 Unknown folder detection: add "Open Folder" link in the HTML amber warning banner so the user can navigate directly to the unrecognized folder in Finder/Explorer
