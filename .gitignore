@@ -1,5 +1,6 @@
 # Generated output — ignored (live scans of real ~/.claude data, not for committing)
-reports/
+reports/*
+!reports/.gitkeep
 
 # Claude Code project-level settings (contains local paths, never commit)
 .claude/

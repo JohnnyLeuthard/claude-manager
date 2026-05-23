@@ -692,6 +692,7 @@ function main() {
     } else {
       // --html-only: write static file (folder links fall back to clipboard copy)
       try {
+        fs.mkdirSync(path.dirname(opts.htmlPath), { recursive: true });
         fs.writeFileSync(opts.htmlPath, html, 'utf-8');
         console.log('HTML report saved to: ' + opts.htmlPath);
         const openCmd = os.platform() === 'darwin' ? 'open' : 'xdg-open';
