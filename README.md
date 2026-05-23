@@ -670,3 +670,8 @@ This reference guide covers **understanding** what's in `~/.claude`. Future phas
 ---
 
 **Have feedback or want to help?** See `CONTRIBUTING.md`.
+
+
+
+<video src="https://github.com/user-attachments/assets/674fc715-0b26-4d73-983a-b9e4660a9586" autoplay loop muted playsinline width="100%"></video>
+
