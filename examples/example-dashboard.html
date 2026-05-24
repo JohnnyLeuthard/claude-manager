@@ -89,6 +89,29 @@
     .progress-wrap { flex: 1; height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; }
     .progress-bar { height: 100%; border-radius: 3px; }
     .card-description { font-size: 0.875rem; color: #334155; }
+    .card-used-by { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; font-size: 0.78rem; }
+    .used-by-label { color: #64748b; font-weight: 500; white-space: nowrap; }
+    .used-by-tags { display: flex; gap: 0.3rem; flex-wrap: wrap; }
+    .used-by-tag {
+      background: #f1f5f9;
+      color: #475569;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      padding: 0.05rem 0.45rem;
+      font-size: 0.72rem;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    .tag-ide   { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+    .tag-cloud { background: #faf5ff; color: #7c3aed; border-color: #e9d5ff; }
+    .card-note {
+      font-size: 0.78rem;
+      color: #0369a1;
+      background: #f0f9ff;
+      border: 1px solid #bae6fd;
+      border-radius: 6px;
+      padding: 0.3rem 0.65rem;
+    }
     .card-freeable { font-size: 0.8rem; }
     .freeable-label { color: #64748b; font-weight: 500; }
     .freeable-value { color: #16a34a; font-weight: 600; }
@@ -271,6 +294,8 @@
         <div class="progress-wrap"><div class="progress-bar" style="width:100%;background:#ef4444"></div></div>
       </div>
       <p class="card-description">Conversation transcripts from every Claude Code session, organized by project path. This is the largest and most sensitive folder — contains full chat logs, file contents, and session context.</p>
+      <div class="card-used-by"><span class="used-by-label">Used by: </span><span class="used-by-tags"><span class="used-by-tag">Claude Code</span><span class="used-by-tag tag-ide">IDE extension</span><span class="used-by-tag tag-cloud">claude.ai</span><span class="used-by-tag tag-cloud">Coworker</span></span></div>
+      <div class="card-note">ℹ Most relevant to claude.ai and Coworker users — conversation history may sync with cloud surfaces.</div>
       <div class="card-freeable">
         <span class="freeable-label">Freeable: </span>
         <span class="freeable-value">Old project conversations (60–80%)</span>
@@ -298,6 +323,8 @@
         <div class="progress-wrap"><div class="progress-bar" style="width:1.3%;background:#ef4444"></div></div>
       </div>
       <p class="card-description">Timestamped backups of your Claude Code config (.claude.json), created automatically every 10–15 minutes. Contains encrypted API keys, settings, hooks, and permission overrides.</p>
+      <div class="card-used-by"><span class="used-by-label">Used by: </span><span class="used-by-tags"><span class="used-by-tag">Claude Code</span></span></div>
+      <div class="card-note">ℹ MCP server configuration is stored in settings.json — which is backed up here.</div>
       <div class="card-freeable">
         <span class="freeable-label">Freeable: </span>
         <span class="freeable-value">None recommended (keep last 1–2 weeks)</span>
@@ -327,6 +354,7 @@
         <div class="progress-wrap"><div class="progress-bar" style="width:17.8%;background:#f59e0b"></div></div>
       </div>
       <p class="card-description">Installed Claude Code plugins and cached marketplace data. The installed plugin data is needed for plugins to work; the marketplace cache is optional.</p>
+      <div class="card-used-by"><span class="used-by-label">Used by: </span><span class="used-by-tags"><span class="used-by-tag">Claude Code</span><span class="used-by-tag tag-ide">IDE extension</span></span></div>
       <div class="card-freeable">
         <span class="freeable-label">Freeable: </span>
         <span class="freeable-value">Marketplace cache only (~50%)</span>
@@ -354,6 +382,7 @@
         <div class="progress-wrap"><div class="progress-bar" style="width:4.9%;background:#f59e0b"></div></div>
       </div>
       <p class="card-description">Locally installed custom skills (slash commands). Deleting this folder disables any custom skills you have installed.</p>
+      <div class="card-used-by"><span class="used-by-label">Used by: </span><span class="used-by-tags"><span class="used-by-tag">Claude Code</span><span class="used-by-tag tag-ide">IDE extension</span></span></div>
       <div class="card-freeable">
         <span class="freeable-label">Freeable: </span>
         <span class="freeable-value">None recommended</span>
@@ -382,6 +411,7 @@
         <div class="progress-wrap"><div class="progress-bar" style="width:12.9%;background:#06b6d4"></div></div>
       </div>
       <p class="card-description">Versioned snapshots of files you edited during Claude Code sessions. Powers the undo/redo feature for file edits. Grows with every session.</p>
+      <div class="card-used-by"><span class="used-by-label">Used by: </span><span class="used-by-tags"><span class="used-by-tag">Claude Code</span><span class="used-by-tag tag-ide">IDE extension</span></span></div>
       <div class="card-freeable">
         <span class="freeable-label">Freeable: </span>
         <span class="freeable-value">Files older than 7 days (~70%)</span>
@@ -409,6 +439,7 @@
         <div class="progress-wrap"><div class="progress-bar" style="width:0.8%;background:#06b6d4"></div></div>
       </div>
       <p class="card-description">Plan-mode session files written during planning conversations. One file per planning session, grows over time.</p>
+      <div class="card-used-by"><span class="used-by-label">Used by: </span><span class="used-by-tags"><span class="used-by-tag">Claude Code</span><span class="used-by-tag">Plan mode</span></span></div>
       <div class="card-freeable">
         <span class="freeable-label">Freeable: </span>
         <span class="freeable-value">Completed plans (~70%)</span>
@@ -437,6 +468,7 @@
         <div class="progress-wrap"><div class="progress-bar" style="width:0.6%;background:#9ca3af"></div></div>
       </div>
       <p class="card-description">Full shell environment captures including PATH, env vars, and shell state. Can contain sensitive environment variables. Safe to delete at any time.</p>
+      <div class="card-used-by"><span class="used-by-label">Used by: </span><span class="used-by-tags"><span class="used-by-tag">Claude Code</span></span></div>
       <div class="card-freeable">
         <span class="freeable-label">Freeable: </span>
         <span class="freeable-value">All (100%)</span>
@@ -463,6 +495,7 @@
         <div class="progress-wrap"><div class="progress-bar" style="width:0.4%;background:#9ca3af"></div></div>
       </div>
       <p class="card-description">Active session tracking files. Only meaningful while Claude Code is running; stale files accumulate when sessions end unexpectedly.</p>
+      <div class="card-used-by"><span class="used-by-label">Used by: </span><span class="used-by-tags"><span class="used-by-tag">Claude Code</span><span class="used-by-tag tag-ide">IDE extension</span></span></div>
       <div class="card-freeable">
         <span class="freeable-label">Freeable: </span>
         <span class="freeable-value">All when Claude not running (100%)</span>
@@ -489,6 +522,7 @@
         <div class="progress-wrap"><div class="progress-bar" style="width:0.2%;background:#9ca3af"></div></div>
       </div>
       <p class="card-description">Cached data from external sources — Claude Code changelog, GitHub issue lists. Rebuilt automatically on next run.</p>
+      <div class="card-used-by"><span class="used-by-label">Used by: </span><span class="used-by-tags"><span class="used-by-tag">Claude Code</span></span></div>
       <div class="card-freeable">
         <span class="freeable-label">Freeable: </span>
         <span class="freeable-value">All (100%)</span>
@@ -516,6 +550,7 @@
         <div class="progress-wrap"><div class="progress-bar" style="width:0.2%;background:#9ca3af"></div></div>
       </div>
       <p class="card-description">Debug logs and symlinks written during troubleshooting sessions. Usually empty; only populated when debug mode is active.</p>
+      <div class="card-used-by"><span class="used-by-label">Used by: </span><span class="used-by-tags"><span class="used-by-tag">Claude Code</span></span></div>
       <div class="card-freeable">
         <span class="freeable-label">Freeable: </span>
         <span class="freeable-value">All (100%)</span>
@@ -542,6 +577,7 @@
         <div class="progress-wrap"><div class="progress-bar" style="width:0.2%;background:#9ca3af"></div></div>
       </div>
       <p class="card-description">Shell environment state snapshots captured at session start. Used to restore context between sessions. Regenerated on each new session.</p>
+      <div class="card-used-by"><span class="used-by-label">Used by: </span><span class="used-by-tags"><span class="used-by-tag">Claude Code</span></span></div>
       <div class="card-freeable">
         <span class="freeable-label">Freeable: </span>
         <span class="freeable-value">All older than current session (100%)</span>
@@ -568,6 +604,7 @@
         <div class="progress-wrap"><div class="progress-bar" style="width:0.1%;background:#9ca3af"></div></div>
       </div>
       <p class="card-description">Queue of pending telemetry events that failed to send. Retried on next run. Safe to clear at any time.</p>
+      <div class="card-used-by"><span class="used-by-label">Used by: </span><span class="used-by-tags"><span class="used-by-tag">Claude Code</span></span></div>
       <div class="card-freeable">
         <span class="freeable-label">Freeable: </span>
         <span class="freeable-value">All (100%)</span>
@@ -595,6 +632,7 @@
         <div class="progress-wrap"><div class="progress-bar" style="width:0.04%;background:#9ca3af"></div></div>
       </div>
       <p class="card-description">Lock files tracking active IDE connections (VS Code, JetBrains). Stale when Claude Code is not running.</p>
+      <div class="card-used-by"><span class="used-by-label">Used by: </span><span class="used-by-tags"><span class="used-by-tag tag-ide">IDE extension</span></span></div>
       <div class="card-freeable">
         <span class="freeable-label">Freeable: </span>
         <span class="freeable-value">All when Claude not running (100%)</span>
@@ -621,6 +659,7 @@
         <div class="progress-wrap"><div class="progress-bar" style="width:0%;background:#9ca3af"></div></div>
       </div>
       <p class="card-description">Unused placeholder folder. Claude Code reserves this path but does not currently write anything here.</p>
+      <div class="card-used-by"><span class="used-by-label">Used by: </span><span class="used-by-tags"><span class="used-by-tag">Claude Code</span></span></div>
       <div class="card-freeable">
         <span class="freeable-label">Freeable: </span>
         <span class="freeable-value">All (100%)</span>
@@ -649,6 +688,7 @@
         <div class="progress-wrap"><div class="progress-bar" style="width:4.4%;background:#d1d5db"></div></div>
       </div>
       <p class="card-description">Unknown folder — not in the documented folder list. May be added by a newer version of Claude Code or a third-party integration. Do not delete without research.</p>
+      <div class="card-used-by"><span class="used-by-label">Used by: </span><span class="used-by-tags"><span class="used-by-tag">Unknown</span></span></div>
       <div class="card-freeable">
         <span class="freeable-label">Freeable: </span>
         <span class="freeable-value">Unknown — research before deleting</span>

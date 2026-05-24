@@ -127,6 +127,9 @@ The goal of Phase 2 is to build automated tools to scan, classify, and safely cl
   - [x] Explain dry-run-by-default design and how to use `--execute` intentionally
   - [x] Common cleanup scenarios with example commands
   - [x] What each script does and what it deletes
+- [x] `assets/claude-manager-infographic.html` — source for the shareable infographic explaining repo usage, folder visibility, safety levels, and value
+- [x] `assets/images/claude-manager-infographic.svg` — editable vector version of the condensed poster
+- [x] `assets/images/claude-manager-infographic.png` — bitmap export of the infographic for sharing outside the repo
 
 ---
 

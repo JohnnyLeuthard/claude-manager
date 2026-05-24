@@ -18,6 +18,8 @@ const FOLDER_METADATA = {
     proDelete:     'Reduces backup clutter',
     conDelete:     'Lose ability to roll back config changes',
     docsUrl:       'https://code.claude.com/docs/en/settings',
+    usedBy:        ['Claude Code'],
+    contextNote:   'MCP server configuration is stored in settings.json — which is backed up here.',
   },
   cache: {
     importance:    'LOW',
@@ -27,6 +29,8 @@ const FOLDER_METADATA = {
     proDelete:     'Instant space recovery, no impact',
     conDelete:     'Slight slowdown on first run after deletion',
     docsUrl:       null,
+    usedBy:        ['Claude Code'],
+    contextNote:   null,
   },
   debug: {
     importance:    'LOW',
@@ -36,6 +40,8 @@ const FOLDER_METADATA = {
     proDelete:     'No impact',
     conDelete:     'Lose debug context if actively troubleshooting',
     docsUrl:       'https://code.claude.com/docs/en/troubleshooting',
+    usedBy:        ['Claude Code'],
+    contextNote:   null,
   },
   downloads: {
     importance:    'LOW',
@@ -45,6 +51,8 @@ const FOLDER_METADATA = {
     proDelete:     'No impact',
     conDelete:     'None',
     docsUrl:       null,
+    usedBy:        ['Claude Code'],
+    contextNote:   null,
   },
   'file-history': {
     importance:    'MEDIUM',
@@ -54,6 +62,8 @@ const FOLDER_METADATA = {
     proDelete:     'Significant space recovery',
     conDelete:     'Lose undo history for older edit sessions',
     docsUrl:       null,
+    usedBy:        ['Claude Code', 'IDE extension'],
+    contextNote:   null,
   },
   ide: {
     importance:    'LOW',
@@ -63,6 +73,8 @@ const FOLDER_METADATA = {
     proDelete:     'No impact, regenerated automatically',
     conDelete:     'None',
     docsUrl:       'https://code.claude.com/docs/en/ide-integrations',
+    usedBy:        ['IDE extension'],
+    contextNote:   null,
   },
   plans: {
     importance:    'MEDIUM',
@@ -72,6 +84,8 @@ const FOLDER_METADATA = {
     proDelete:     'Cleaner workspace, space recovery',
     conDelete:     'Lose plan history from past sessions',
     docsUrl:       'https://code.claude.com/docs/en/overview',
+    usedBy:        ['Claude Code', 'Plan mode'],
+    contextNote:   null,
   },
   plugins: {
     importance:    'HIGH',
@@ -81,6 +95,8 @@ const FOLDER_METADATA = {
     proDelete:     'Slimmer install footprint',
     conDelete:     'Re-downloads marketplace data on next update check, installed plugins may need reinstall',
     docsUrl:       'https://code.claude.com/docs/en/plugins',
+    usedBy:        ['Claude Code', 'IDE extension'],
+    contextNote:   null,
   },
   projects: {
     importance:    'CRITICAL',
@@ -90,6 +106,8 @@ const FOLDER_METADATA = {
     proDelete:     'Massive space savings, privacy improvement',
     conDelete:     'Lose conversation history and session context continuity',
     docsUrl:       'https://code.claude.com/docs/en/memory',
+    usedBy:        ['Claude Code', 'IDE extension', 'claude.ai', 'Coworker'],
+    contextNote:   'Most relevant to claude.ai and Coworker users — conversation history may sync with cloud surfaces.',
   },
   'session-env': {
     importance:    'LOW',
@@ -99,6 +117,8 @@ const FOLDER_METADATA = {
     proDelete:     'No impact, regenerated automatically',
     conDelete:     'None',
     docsUrl:       null,
+    usedBy:        ['Claude Code'],
+    contextNote:   null,
   },
   sessions: {
     importance:    'LOW',
@@ -108,6 +128,8 @@ const FOLDER_METADATA = {
     proDelete:     'No impact, regenerated automatically',
     conDelete:     'None',
     docsUrl:       null,
+    usedBy:        ['Claude Code', 'IDE extension'],
+    contextNote:   null,
   },
   'shell-snapshots': {
     importance:    'LOW',
@@ -117,6 +139,8 @@ const FOLDER_METADATA = {
     proDelete:     'Space recovery and privacy improvement (may contain secrets in env vars)',
     conDelete:     'None — regenerated automatically',
     docsUrl:       null,
+    usedBy:        ['Claude Code'],
+    contextNote:   null,
   },
   skills: {
     importance:    'HIGH',
@@ -126,6 +150,8 @@ const FOLDER_METADATA = {
     proDelete:     'None',
     conDelete:     'All custom skills stop working until reinstalled',
     docsUrl:       'https://code.claude.com/docs/en/slash-commands',
+    usedBy:        ['Claude Code', 'IDE extension'],
+    contextNote:   null,
   },
   telemetry: {
     importance:    'LOW',
@@ -135,6 +161,8 @@ const FOLDER_METADATA = {
     proDelete:     'No impact (events were already queued, will not be sent)',
     conDelete:     'None',
     docsUrl:       null,
+    usedBy:        ['Claude Code'],
+    contextNote:   null,
   },
   todos: {
     importance:    'HIGH',
@@ -144,6 +172,8 @@ const FOLDER_METADATA = {
     proDelete:     'Cleaner state, slight space recovery',
     conDelete:     'Lose todo history from past sessions',
     docsUrl:       'https://code.claude.com/docs/en/overview',
+    usedBy:        ['Claude Code', 'IDE extension'],
+    contextNote:   null,
   },
 };
 
@@ -445,6 +475,13 @@ function renderHTML(folders, { totalSize, freeableSize, unknowns }) {
         </div>
       </div>
       <p class="card-description">${escapeHtml(folder.description)}</p>
+      <div class="card-used-by"><span class="used-by-label">Used by: </span><span class="used-by-tags">${(folder.usedBy || []).map(tag => {
+        const cls = tag === 'IDE extension' ? 'used-by-tag tag-ide'
+                  : (tag === 'claude.ai' || tag === 'Coworker') ? 'used-by-tag tag-cloud'
+                  : 'used-by-tag';
+        return `<span class="${cls}">${escapeHtml(tag)}</span>`;
+      }).join('')}</span></div>
+      ${folder.contextNote ? `<div class="card-note">ℹ ${escapeHtml(folder.contextNote)}</div>` : ''}
       <div class="card-freeable">
         <span class="freeable-label">Freeable: </span>
         <span class="freeable-value">${escapeHtml(folder.spaceFreeable)}</span>
@@ -543,6 +580,29 @@ function renderHTML(folders, { totalSize, freeableSize, unknowns }) {
     .progress-wrap { flex: 1; height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; }
     .progress-bar { height: 100%; border-radius: 3px; }
     .card-description { font-size: 0.875rem; color: #334155; }
+    .card-used-by { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; font-size: 0.78rem; }
+    .used-by-label { color: #64748b; font-weight: 500; white-space: nowrap; }
+    .used-by-tags { display: flex; gap: 0.3rem; flex-wrap: wrap; }
+    .used-by-tag {
+      background: #f1f5f9;
+      color: #475569;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      padding: 0.05rem 0.45rem;
+      font-size: 0.72rem;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    .tag-ide   { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+    .tag-cloud { background: #faf5ff; color: #7c3aed; border-color: #e9d5ff; }
+    .card-note {
+      font-size: 0.78rem;
+      color: #0369a1;
+      background: #f0f9ff;
+      border: 1px solid #bae6fd;
+      border-radius: 6px;
+      padding: 0.3rem 0.65rem;
+    }
     .card-freeable { font-size: 0.8rem; }
     .freeable-label { color: #64748b; font-weight: 500; }
     .freeable-value { color: #16a34a; font-weight: 600; }
