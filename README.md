@@ -1,11 +1,12 @@
 # The ~/.claude Folder — Complete Reference
 
 <p align="center">
-
 <img src="assets/images/ClaudeManagerExplainer.gif" width="600">
-
 </p>
 
+<p align="center">
+<a href="https://htmlpreview.github.io/?https://github.com/JohnnyLeuthard/claude-manager/blob/main/examples/example-dashboard.html"><strong>→ View example dashboard</strong></a>
+</p>
 
 An authoritative map of everything in `~/.claude` — the system folder where Claude Code stores configuration, conversations, settings, and session data.
 

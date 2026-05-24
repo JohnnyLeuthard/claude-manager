@@ -143,7 +143,7 @@ const FOLDER_METADATA = {
     freeablePct:   0.5,
     proDelete:     'Cleaner state, slight space recovery',
     conDelete:     'Lose todo history from past sessions',
-    docsUrl:       null,
+    docsUrl:       'https://code.claude.com/docs/en/overview',
   },
 };
 
@@ -402,13 +402,23 @@ function renderHTML(folders, { totalSize, freeableSize, unknowns }) {
   const now = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
   const maxSize = Math.max(...folders.map(f => f.size), 1);
 
+  const presentNames = new Set(folders.map(f => f.bareName));
+  const allKnown = Object.keys(FOLDER_METADATA)
+    .sort()
+    .map(name => ({
+      name,
+      present: presentNames.has(name),
+      docsUrl: FOLDER_METADATA[name].docsUrl,
+      importance: FOLDER_METADATA[name].importance,
+    }));
+
   const unknownBanner = (!unknowns || unknowns.length === 0) ? '' : `
   <div class="unknown-alert">
     <div class="unknown-alert-title">⚠ ${unknowns.length} unrecognized folder${unknowns.length > 1 ? 's' : ''} found</div>
     <p>Not in the documented folder list — may have been added by a newer Claude Code version.
        Do not delete without research. Update <code>FOLDER_METADATA</code> in scripts/scan.js to clear this warning.</p>
     <ul class="unknown-list">
-      ${unknowns.map(f => `<li><code>${escapeHtml(f.name)}</code> &mdash; ${escapeHtml(f.path)}</li>`).join('\n      ')}
+      ${unknowns.map(f => `<li><code>${escapeHtml(f.name)}</code> &mdash; ${escapeHtml(f.path)}<a class="unknown-open-link" href="#" onclick="openFolder(this.dataset.path);return false;" data-path="${escapeHtml(f.path)}">Open Folder →</a></li>`).join('\n      ')}
     </ul>
   </div>`;
 
@@ -569,7 +579,83 @@ function renderHTML(folders, { totalSize, freeableSize, unknowns }) {
     .unknown-alert-title { font-weight: 700; color: #92400e; margin-bottom: 0.5rem; font-size: 1rem; }
     .unknown-alert p { font-size: 0.875rem; color: #78350f; margin-bottom: 0.5rem; }
     .unknown-list { font-size: 0.85rem; color: #92400e; padding-left: 1.25rem; }
-    .unknown-list li { margin-top: 0.25rem; }
+    .unknown-list li { margin-top: 0.25rem; display: flex; align-items: baseline; gap: 0.5rem; }
+    .unknown-open-link { font-size: 0.75rem; color: #b45309; text-decoration: none; border-bottom: 1px dashed #b45309; white-space: nowrap; flex-shrink: 0; }
+    .unknown-open-link:hover { color: #92400e; border-bottom-color: #92400e; }
+    .refresh-btn {
+      margin-left: auto;
+      padding: 0.45rem 1.1rem;
+      background: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+    .refresh-btn:hover:not(:disabled) { background: #2563eb; }
+    .refresh-btn:disabled { opacity: 0.6; cursor: default; }
+    .folder-ref {
+      margin: 2rem 0 1.5rem;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+    }
+    .folder-ref-title {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #64748b;
+      margin-bottom: 0.75rem;
+      font-weight: 600;
+    }
+    .folder-ref-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.4rem; }
+    .folder-ref-desc { font-size: 0.78rem; color: #64748b; margin-bottom: 0.85rem; }
+    .folder-ref-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.25rem 0.65rem;
+      border-radius: 6px;
+      border-left: 3px solid;
+      border-top: 1px solid #e2e8f0;
+      border-right: 1px solid #e2e8f0;
+      border-bottom: 1px solid #e2e8f0;
+      font-size: 0.78rem;
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      background: #f8fafc;
+    }
+    .chip-present .chip-status { color: #16a34a; font-weight: 700; }
+    .chip-absent { border-left-style: dashed; background: #f1f5f9; }
+    .chip-absent .chip-status { color: #cbd5e1; font-weight: 700; }
+    .chip-absent .chip-name { color: #94a3b8; }
+    .chip-name { color: #334155; }
+    .chip-docs {
+      font-size: 0.65rem;
+      color: #3b82f6;
+      text-decoration: none;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 4px;
+      padding: 0.05rem 0.35rem;
+      margin-left: 0.3rem;
+      white-space: nowrap;
+    }
+    .chip-docs:hover { background: #dbeafe; border-color: #93c5fd; text-decoration: none; }
+    .folder-ref-status {
+      margin-top: 0.85rem;
+      font-size: 0.78rem;
+      padding: 0.4rem 0.75rem;
+      border-radius: 6px;
+      display: inline-block;
+    }
+    .status-ok   { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+    .status-warn { background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa; }
+    .status-info { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
   </style>
 </head>
 <body>
@@ -591,6 +677,7 @@ function renderHTML(folders, { totalSize, freeableSize, unknowns }) {
       <div class="stat-label">Est. Freeable</div>
       <div class="stat-value freeable">~${escapeHtml(formatSize(freeableSize))}</div>
     </div>
+    <button class="refresh-btn" id="refresh-btn" onclick="rescan()">↺ Refresh</button>
   </div>
 
   ${unknownBanner}
@@ -607,6 +694,31 @@ function renderHTML(folders, { totalSize, freeableSize, unknowns }) {
     ${cards}
   </main>
 
+  <section class="folder-ref">
+    <div class="folder-ref-header">
+      <div class="folder-ref-title">Known Folder Reference</div>
+    </div>
+    <p class="folder-ref-desc">All folders Claude Code may create in <code>~/.claude</code>. Dimmed folders with a dashed border are not present on this system. Border color shows importance level — a missing <strong style="color:#ef4444">CRITICAL</strong> or <strong style="color:#f59e0b">HIGH</strong> folder may need attention; <strong style="color:#06b6d4">MEDIUM</strong> and <strong style="color:#9ca3af">LOW</strong> folders are created on demand and are safe to be absent. Use the <strong>Docs →</strong> link on each chip to open vendor documentation.</p>
+    <div class="folder-ref-chips">
+      ${allKnown.map(f => {
+        const colors = IMPORTANCE_COLORS_HTML[f.importance] || IMPORTANCE_COLORS_HTML.UNKNOWN;
+        const docsEl = f.docsUrl
+          ? `<a class="chip-docs" href="${escapeHtml(f.docsUrl)}" target="_blank" rel="noopener">Docs →</a>`
+          : '';
+        return `<span class="chip ${f.present ? 'chip-present' : 'chip-absent'}" style="border-left-color:${colors.border}"><span class="chip-status">${f.present ? '✓' : '✗'}</span><span class="chip-name">${escapeHtml(f.name)}/</span>${docsEl}</span>`;
+      }).join('\n      ')}
+    </div>
+    ${(() => {
+      const missing         = allKnown.filter(f => !f.present);
+      const missingUrgent   = missing.filter(f => f.importance === 'CRITICAL' || f.importance === 'HIGH');
+      const missingMedium   = missing.filter(f => f.importance === 'MEDIUM');
+      if (missing.length === 0)       return '<div class="folder-ref-status status-ok">✓ All known folders are present on your system.</div>';
+      if (missingUrgent.length > 0)   return `<div class="folder-ref-status status-warn">⚠ ${missingUrgent.length} missing folder${missingUrgent.length > 1 ? 's' : ''} (${missingUrgent.map(f => f.name + '/').join(', ')}) ${missingUrgent.length > 1 ? 'are' : 'is'} CRITICAL or HIGH importance — review before assuming they are safe to leave absent.</div>`;
+      if (missingMedium.length > 0)   return `<div class="folder-ref-status status-info">${missingMedium.length} missing folder${missingMedium.length > 1 ? 's are' : ' is'} MEDIUM importance — likely normal if you haven't used those features yet.</div>`;
+      return `<div class="folder-ref-status status-ok">✓ ${missing.length} folder${missing.length > 1 ? 's are' : ' is'} absent (${missing.map(f => f.name + '/').join(', ')}) — all LOW importance, created on demand. Nothing to worry about.</div>`;
+    })()}
+  </section>
+
   <footer>Generated by <strong>claude-manager</strong> &mdash; ${escapeHtml(now)}</footer>
 
   <script>
@@ -616,6 +728,27 @@ function renderHTML(folders, { totalSize, freeableSize, unknowns }) {
           navigator.clipboard.writeText(p).then(function() { toast('Path copied to clipboard'); });
         }
       });
+    }
+    function rescan() {
+      var btn = document.getElementById('refresh-btn');
+      btn.disabled = true;
+      btn.textContent = 'Scanning…';
+      fetch('/rescan')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.ok) {
+            window.location.reload();
+          } else {
+            toast('Scan failed: ' + (data.error || 'unknown error'));
+            btn.disabled = false;
+            btn.textContent = '↺ Refresh';
+          }
+        })
+        .catch(function() {
+          toast('Run with  node scripts/scan.js --html  to enable the Refresh button.');
+          btn.disabled = false;
+          btn.textContent = '↺ Refresh';
+        });
     }
     function toast(msg) {
       var el = document.createElement('div');
@@ -631,11 +764,13 @@ function renderHTML(folders, { totalSize, freeableSize, unknowns }) {
 
 // ─── Local server (makes folder-open links work in all browsers) ──────────────
 
-function serveHTML(html, claudeDir) {
+function serveHTML(initialHtml, claudeDir) {
+  let currentHtml = initialHtml;
+
   const server = http.createServer((req, res) => {
     if (req.method === 'GET' && req.url === '/') {
       res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-      res.end(html);
+      res.end(currentHtml);
       return;
     }
 
@@ -650,6 +785,22 @@ function serveHTML(html, claudeDir) {
       } else {
         res.writeHead(403, { 'Content-Type': 'text/plain' });
         res.end('forbidden');
+      }
+      return;
+    }
+
+    if (req.method === 'GET' && req.url === '/rescan') {
+      try {
+        const folders      = scanFolders(claudeDir);
+        const totalSize    = folders.reduce((s, f) => s + f.size, 0);
+        const freeableSize = folders.reduce((s, f) => s + f.size * f.freeablePct, 0);
+        const unknowns     = folders.filter(f => f.importance === 'UNKNOWN');
+        currentHtml = renderHTML(folders, { totalSize, freeableSize, unknowns });
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: true }));
+      } catch (e) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: false, error: e.message }));
       }
       return;
     }
