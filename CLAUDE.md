@@ -40,6 +40,10 @@ claude-manager/
 ## Workflow Rules
 
 - **Always update TASKS.md** when completing, adding, or changing planned work. Check off finished items, add new ones, note blockers inline.
+- **Never install packages without explicit per-request approval.** Before any `npm`, `brew`, `pip`, `npx`, or similar install command — stop and ask. Explain what it installs, where it writes files, and the cleanup path. This project runs in shared/portable workflows; silent installs have caused 500MB+ messes before.
+- **Keep all persistent context in CLAUDE.md**, not in `~/.claude/`. This project lives on a portable drive used across multiple machines. Anything written to `~/.claude/` is machine-local and invisible on other computers.
+- **Never use the auto-memory system.** Do not write to `~/.claude/projects/` memory folders. If something is worth remembering, it goes in CLAUDE.md — full stop. The auto-memory system writes to the local machine and is invisible on other computers, which defeats the entire purpose of this workflow.
+- **Never save user information, feedback, or preferences anywhere outside this repo.** Not to `~/.claude/`, not to any temp file, not anywhere outside the project directory on the portable drive.
 
 ## Core Principles
 
