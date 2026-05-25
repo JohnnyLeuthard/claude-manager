@@ -4,6 +4,7 @@
 const fs   = require('fs');
 const path = require('path');
 const os   = require('os');
+const http = require('http');
 const { spawnSync } = require('child_process');
 
 // ─── Secret patterns ──────────────────────────────────────────────────────────
@@ -363,19 +364,21 @@ function renderTerminal(findings, { highCount, warnCount, okCount }) {
 
 // ─── HTML renderer ────────────────────────────────────────────────────────────
 
-function renderHTML(findings, { highCount, warnCount, okCount }) {
+function renderHTML(findings, { highCount, warnCount, okCount }, claudeDir) {
   const now    = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
   const order  = { HIGH: 0, WARN: 1, OK: 2 };
   const sorted = [...findings].sort((a, b) => (order[a.severity] ?? 3) - (order[b.severity] ?? 3));
 
   const cards = sorted.map(f => {
-    const colors  = SEVERITY_COLORS_HTML[f.severity] || SEVERITY_COLORS_HTML.OK;
-    const sym     = SEVERITY_SYMBOLS[f.severity] || '';
-    const fileEl  = f.file ? `<span class="finding-file">${escapeHtml(f.file)}</span>` : '';
+    const colors     = SEVERITY_COLORS_HTML[f.severity] || SEVERITY_COLORS_HTML.OK;
+    const sym        = SEVERITY_SYMBOLS[f.severity] || '';
+    const fileEl     = f.file ? `<span class="finding-file">${escapeHtml(f.file)}</span>` : '';
+    const folderPath = f.target.endsWith('/') ? path.join(claudeDir, f.target) : claudeDir;
+    const targetLink = `<a href="#" onclick="openPath(this.dataset.path);return false;" data-path="${escapeHtml(folderPath)}" title="Open in Finder"><code>${escapeHtml(f.target)}</code></a>`;
     return `
     <div class="finding-card" style="border-left-color:${colors.border}">
       <div class="finding-header">
-        <span class="finding-target"><code>${escapeHtml(f.target)}</code>${fileEl}</span>
+        <span class="finding-target">${targetLink}${fileEl}</span>
         <span class="badge" style="background:${colors.badge}">${sym} ${escapeHtml(f.severity)}</span>
       </div>
       <div class="finding-row"><span class="finding-label">Pattern</span><span class="finding-value">${escapeHtml(f.pattern)}</span></div>
@@ -454,6 +457,9 @@ function renderHTML(findings, { highCount, warnCount, okCount }) {
       font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
       font-size: 0.9rem;
     }
+    .finding-target a { color: inherit; text-decoration: none; }
+    .finding-target a code { border-bottom: 1px dashed #94a3b8; }
+    .finding-target a:hover code { border-bottom-color: #3b82f6; color: #3b82f6; }
     .finding-file {
       font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
       font-size: 0.8rem;
@@ -559,8 +565,69 @@ function renderHTML(findings, { highCount, warnCount, okCount }) {
     Read-only &mdash; no files were modified &nbsp;|&nbsp;
     Run again: <code>node scripts/audit.js --html</code>
   </footer>
+
+  <script>
+    function openPath(p) {
+      fetch('/open?path=' + encodeURIComponent(p)).catch(function() {
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(p).then(function() { toast('Path copied to clipboard'); });
+        }
+      });
+    }
+    function toast(msg) {
+      var el = document.createElement('div');
+      el.textContent = msg;
+      el.style.cssText = 'position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:.5rem 1.25rem;border-radius:6px;font-size:.8rem;z-index:999;pointer-events:none;';
+      document.body.appendChild(el);
+      setTimeout(function() { el.remove(); }, 2500);
+    }
+  </script>
 </body>
 </html>`;
+}
+
+// ─── Local server (makes folder-open links work) ─────────────────────────────
+
+function serveAuditHTML(html, claudeDir) {
+  const server = http.createServer((req, res) => {
+    if (req.method === 'GET' && req.url === '/') {
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+      res.end(html);
+      return;
+    }
+
+    if (req.method === 'GET' && req.url.startsWith('/open?')) {
+      const urlObj     = new URL(req.url, 'http://localhost');
+      const folderPath = urlObj.searchParams.get('path');
+      if (folderPath && folderPath.startsWith(claudeDir)) {
+        const openCmd = os.platform() === 'darwin' ? 'open' : 'xdg-open';
+        spawnSync(openCmd, [folderPath]);
+        res.writeHead(200, { 'Content-Type': 'text/plain' });
+        res.end('ok');
+      } else {
+        res.writeHead(403, { 'Content-Type': 'text/plain' });
+        res.end('forbidden');
+      }
+      return;
+    }
+
+    res.writeHead(404);
+    res.end('not found');
+  });
+
+  server.listen(0, '127.0.0.1', () => {
+    const port = server.address().port;
+    const url  = 'http://localhost:' + port;
+    console.log('  Audit report running at ' + url);
+    console.log('  Press Ctrl+C to stop.\n');
+    const openCmd = os.platform() === 'darwin' ? 'open' : 'xdg-open';
+    spawnSync(openCmd, [url]);
+  });
+
+  setTimeout(() => {
+    console.log('\n  Server stopped after 10 minutes.');
+    process.exit(0);
+  }, 10 * 60 * 1000);
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
@@ -588,17 +655,20 @@ function main() {
   }
 
   if (opts.showHtml) {
-    const html = renderHTML(findings, summary);
-    try {
-      fs.mkdirSync(path.dirname(opts.htmlPath), { recursive: true });
-      fs.writeFileSync(opts.htmlPath, html, 'utf-8');
-      const msg = 'HTML report saved to: ' + opts.htmlPath;
-      opts.showTerminal ? console.log('  ' + msg) : console.log(msg);
-      const openCmd = os.platform() === 'darwin' ? 'open' : 'xdg-open';
-      spawnSync(openCmd, [opts.htmlPath], { detached: true, stdio: 'ignore' });
-    } catch (e) {
-      console.error('Error writing HTML file: ' + e.message);
-      process.exit(1);
+    const html = renderHTML(findings, summary, claudeDir);
+    if (opts.showTerminal) {
+      serveAuditHTML(html, claudeDir);
+    } else {
+      try {
+        fs.mkdirSync(path.dirname(opts.htmlPath), { recursive: true });
+        fs.writeFileSync(opts.htmlPath, html, 'utf-8');
+        console.log('HTML report saved to: ' + opts.htmlPath);
+        const openCmd = os.platform() === 'darwin' ? 'open' : 'xdg-open';
+        spawnSync(openCmd, [opts.htmlPath], { detached: true, stdio: 'ignore' });
+      } catch (e) {
+        console.error('Error writing HTML file: ' + e.message);
+        process.exit(1);
+      }
     }
   }
 }
