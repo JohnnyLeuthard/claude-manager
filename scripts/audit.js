@@ -316,13 +316,18 @@ function renderTerminal(findings, { highCount, warnCount, okCount }) {
   console.log();
 
   // Disclaimer — always shown
-  console.log(c('gray', '  ╔' + '═'.repeat(WIDTH - 4) + '╗'));
-  console.log(c('gray', '  ║') + c('yellow', ' ⚠  DISCLAIMER') + ' '.repeat(WIDTH - 19) + c('gray', '║'));
-  console.log(c('gray', '  ║') + '  This tool uses pattern matching and is not exhaustive.      ' + c('gray', '║'));
-  console.log(c('gray', '  ║') + '  It may miss secrets or flag false positives. Treat all      ' + c('gray', '║'));
-  console.log(c('gray', '  ║') + '  findings as leads to investigate — not confirmed risks.     ' + c('gray', '║'));
-  console.log(c('gray', '  ║') + '  Validate manually before taking any action.                ' + c('gray', '║'));
-  console.log(c('gray', '  ╚' + '═'.repeat(WIDTH - 4) + '╝'));
+  const D = c('gray', '  │ ');
+  console.log(c('gray', '  ┌─ ') + cb('yellow', '⚠  DISCLAIMER') + c('gray', ' ' + '─'.repeat(WIDTH - 22) + '┐'));
+  console.log(D + 'This tool uses pattern matching and is NOT exhaustive.');
+  console.log(D + 'Secrets may exist that it cannot detect. A clean result');
+  console.log(D + 'does NOT mean your data is secure — it means no known');
+  console.log(D + 'patterns were matched in the scanned files.');
+  console.log(D);
+  console.log(D + 'Findings may be false positives. Absences may be false');
+  console.log(D + 'negatives. You are responsible for your own due diligence,');
+  console.log(D + 'manual verification, and compliance with any security');
+  console.log(D + 'policies or protocols applicable to your work.');
+  console.log(c('gray', '  └' + '─'.repeat(WIDTH - 4) + '┘'));
   console.log();
 
   if (highCount > 0) {
@@ -535,10 +540,14 @@ function renderHTML(findings, { highCount, warnCount, okCount }) {
   </div>
 
   <div class="disclaimer">
-    <strong>⚠ Disclaimer:</strong> This tool uses pattern matching and is not exhaustive.
-    It may miss secrets or flag false positives. Treat all findings as leads to investigate —
-    not confirmed risks. You are responsible for manually validating results and deciding
-    what action, if any, to take. This tool does not replace a professional security review.
+    <strong>⚠ Disclaimer — read before acting on these results:</strong>
+    <ul style="margin-top:0.5rem;padding-left:1.25rem;display:flex;flex-direction:column;gap:0.3rem;">
+      <li>This tool uses pattern matching and is <strong>not exhaustive</strong>. Secrets may exist that it cannot detect.</li>
+      <li>A <strong>clean result does not mean your data is secure</strong> — it means no known patterns were matched in the scanned files.</li>
+      <li>Findings may be <strong>false positives</strong>. Absences may be <strong>false negatives</strong>.</li>
+      <li>You are responsible for your own <strong>due diligence, manual verification, and compliance</strong> with any security policies or protocols applicable to your work.</li>
+      <li>This tool is a helper to surface potential risks — it is <strong>not a substitute for a professional security review</strong>.</li>
+    </ul>
   </div>
 
   <div class="findings">
