@@ -144,8 +144,8 @@ function scanShellSnapshots(claudeDir) {
       target,
       file:    null,
       pattern: `Scanned ${files.length} file${files.length !== 1 ? 's' : ''}`,
-      preview: 'No credential patterns found',
-      action:  'All clear',
+      preview: 'No known credential patterns detected',
+      action:  'No known patterns matched — verify manually',
     });
   }
 
@@ -210,8 +210,8 @@ function scanSessionEnv(claudeDir) {
       target,
       file:    null,
       pattern: `Scanned ${scannedCount} file${scannedCount !== 1 ? 's' : ''}`,
-      preview: 'No sensitive variable names found',
-      action:  'All clear',
+      preview: 'No known sensitive variable names detected',
+      action:  'No known patterns matched — verify manually',
     }];
   }
 
@@ -259,7 +259,7 @@ function scanMcpAuthCache(claudeDir) {
   extractHosts(parsed);
 
   if (hosts.size === 0) {
-    return [{ severity: 'OK', target, file: null, pattern: 'No external services found', preview: 'File contains no host entries', action: 'All clear' }];
+    return [{ severity: 'OK', target, file: null, pattern: 'No external services found', preview: 'File contains no host entries', action: 'No known patterns matched — verify manually' }];
   }
 
   const unknown = [...hosts].sort().filter(
@@ -273,7 +273,7 @@ function scanMcpAuthCache(claudeDir) {
       file:    null,
       pattern: `${hosts.size} service${hosts.size !== 1 ? 's' : ''} found`,
       preview: [...hosts].sort().join(', '),
-      action:  'All recognized — all clear',
+      action:  'All hosts recognized — verify manually that these services are expected',
     }];
   }
 
@@ -355,7 +355,7 @@ function renderTerminal(findings, { highCount, warnCount, okCount }) {
   console.log();
   console.log(c('gray', '  Read-only — no files were modified.'));
   if (!findings.some(f => f.severity !== 'OK')) {
-    console.log(c('green', '  ✓ No issues found.'));
+    console.log(c('green', '  ✓ No known patterns matched — this does not guarantee your data is clean.'));
   }
   console.log(c('yellow', '  Tip: run  node scripts/audit.js --html  for a visual report'));
   console.log();
@@ -389,7 +389,7 @@ function renderHTML(findings, { highCount, warnCount, okCount }) {
     ? `⚠ ${highCount} possible credential${highCount > 1 ? 's' : ''} found — rotate immediately`
     : warnCount > 0
       ? `${warnCount} item${warnCount > 1 ? 's' : ''} to review`
-      : '✓ No issues found';
+      : '✓ No known patterns matched — verify manually';
 
   return `<!DOCTYPE html>
 <html lang="en">
