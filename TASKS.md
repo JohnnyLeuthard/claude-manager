@@ -130,6 +130,11 @@ The goal of Phase 2 is to build automated tools to scan, classify, and safely cl
         - Known-safe list: `anthropic.com`, `claude.ai`, `github.com`, `google.com`, `linear.app` (expand as needed)
   - [ ] 🟡 Report three buckets: HIGH (likely secret found), WARN (watch out), OK (nothing found)
   - [ ] 🟢 Graceful handling: if a target folder/file doesn't exist, skip and report "not present — nothing to scan"
+  - [ ] 🟢 Disclaimer — displayed prominently in both terminal output and HTML report:
+        - This tool uses pattern matching and **may miss secrets or produce false positives**
+        - It is a helper, not a guarantee — users are responsible for their own verification
+        - Findings must be manually reviewed; no automated action is taken
+        - Recommended wording: *"This audit uses pattern matching and is not exhaustive. It may miss secrets or flag false positives. Treat all findings as leads to investigate, not confirmed risks. Validate manually before taking action."*
   - [ ] 🟢 Add "Last audit" line to `scan.js` HTML footer linking to most recent `audit-*.html` in `reports/`
   - [ ] 🟢 Update `SCRIPTS.md` `audit.js` section from planned to actual usage docs
   - [ ] 🟢 Update `SPEC.md`: move "Planned: audit.js" to "scripts/audit.js — Full Architecture" after implementation
