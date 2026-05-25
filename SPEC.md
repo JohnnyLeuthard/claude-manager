@@ -486,9 +486,7 @@ Destructive action should be intentional, not accidental. Running the cleanup sc
 
 ---
 
-## Planned: audit.js — Security Scanner
-
-> **Status: In Progress (Phase 2).** Full architecture below. See TASKS.md "Security Auditing" for task checklist. Once built, this section moves to "scripts/audit.js — Full Architecture."
+## scripts/audit.js — Security Scanner
 
 Single-file script. No npm packages. Node built-ins only: `fs`, `path`, `os`.
 
@@ -610,7 +608,6 @@ const latest = audits.sort().pop(); // lexicographic sort works for YYYY-MM-DD f
 Per `TASKS.md` Phase 2 and 3:
 
 - `scripts/clean.js` — dry-run-by-default cleanup with `--execute`, `--only-<category>`, `--older-than-days`
-- `scripts/audit.js` — see "Planned: audit.js" section above (in progress)
 - Unknown folder AI-assisted workflow (Part 2) — auto-generate metadata for unrecognized folders
 - Projects folder deep dive — per-project size, session count, last-active date
 - Interactive HTML frontend — tabs, cleanup UI, scan history

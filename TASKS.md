@@ -135,9 +135,9 @@ The goal of Phase 2 is to build automated tools to scan, classify, and safely cl
   - [x] 🟢 `examples/example-audit.html` — sanitized static demo report showing HIGH + WARN + OK findings with fake data; includes EXAMPLE banner so it can't be mistaken for a real scan
   - [x] 🟢 `examples/fixtures/demo-shell-snapshot.sh` — repo-tracked fixture with fake credentials; drop into `~/.claude/shell-snapshots/` to trigger live findings for testing
   - [x] 🟢 HTML report: make finding target/file path a clickable link that opens the folder in Finder/Explorer — same server-call pattern as `scan.js` folder links (call `/open?path=...` endpoint; falls back to clipboard copy in static mode)
-  - [ ] 🟢 Add "Last audit" line to `scan.js` HTML footer linking to most recent `audit-*.html` in `reports/`
-  - [ ] 🟢 Update `SPEC.md`: move "Planned: audit.js" to "scripts/audit.js — Full Architecture" after implementation
-  - [ ] 🟢 Update `examples/example-dashboard.html` footer if `scan.js` footer changes
+  - [x] 🟢 Add "Last audit" line to `scan.js` HTML footer linking to most recent `audit-*.html` in `reports/`
+  - [x] 🟢 Update `SPEC.md`: move "Planned: audit.js" to "scripts/audit.js — Full Architecture" after implementation
+  - [x] 🟢 Update `examples/example-dashboard.html` footer if `scan.js` footer changes
 
 ### Documentation
 
