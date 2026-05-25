@@ -2,7 +2,7 @@
 
 Living checklist of work completed, in progress, and planned for the `claude-manager/` project.
 
-**Last updated:** May 23, 2026 (repo live)
+**Last updated:** May 25, 2026
 
 ---
 
@@ -115,11 +115,29 @@ The goal of Phase 2 is to build automated tools to scan, classify, and safely cl
 
 ### Security Auditing
 
-- [ ] 🔴 `scripts/audit.js` — check for security risks
-  - [ ] 🟡 Scan `shell-snapshots/` for API keys or secrets
-  - [ ] 🟡 Scan `session-env/` for leaked env vars
-  - [ ] 🟢 Check `mcp-needs-auth-cache.json` for unusual external services
-  - [ ] 🟡 Report: "these are OK, watch out for these, delete these for privacy"
+- [x] `scripts/audit.js` — read-only security scanner (terminal + optional HTML report)
+  - **Design:** separate script following the same dual-output pattern as `scan.js`. Terminal ANSI output by default; `--html` flag writes `reports/audit-YYYY-MM-DD.html`. No server needed — audit HTML is always static. See SPEC.md for full architecture.
+  - [x] 🟢 Terminal output: ANSI-colored findings list with severity (🔴 HIGH / 🟡 WARN / 🟢 OK)
+  - [x] 🟢 `--html` flag: write `reports/audit-YYYY-MM-DD.html` — self-contained, no server needed
+  - [x] 🟢 `--html-only` flag: same as `--html` but suppress terminal output
+  - [x] 🟢 `--no-color` flag: plain text terminal output (for piping/logging)
+  - [x] 🟡 Scan `shell-snapshots/` for API key and secret patterns
+        - Patterns: `sk-[a-z0-9]{20,}`, `ghp_[a-zA-Z0-9]{36}`, `AKIA[0-9A-Z]{16}`, `Bearer [token]`, `[A-Z_]+(API_KEY|TOKEN|SECRET|PASSWORD)=value`
+        - Truncate matched value to first 6 chars + `***` in output — never print full secret
+  - [x] 🟡 Scan `session-env/` for sensitive environment variable names
+        - Flag any var matching `*_KEY`, `*_TOKEN`, `*_SECRET`, `*_PASSWORD`, `*_PASS`, `DATABASE_URL`
+  - [x] 🟢 Check `mcp-needs-auth-cache.json` for unusual/unrecognized external service hosts
+        - Known-safe list: `anthropic.com`, `claude.ai`, `github.com`, `google.com`, `linear.app` (expand as needed)
+  - [x] 🟡 Report three buckets: HIGH (likely secret found), WARN (watch out), OK (nothing found)
+  - [x] 🟢 Graceful handling: if a target folder/file doesn't exist, skip and report "not present — nothing to scan"
+  - [x] 🟢 Disclaimer — displayed prominently in both terminal output and HTML report; covers false positives, false negatives, and user responsibility for due diligence
+  - [x] 🟢 Update `SCRIPTS.md` `audit.js` section from planned to actual usage docs
+  - [x] 🟢 `examples/example-audit.html` — sanitized static demo report showing HIGH + WARN + OK findings with fake data; includes EXAMPLE banner so it can't be mistaken for a real scan
+  - [x] 🟢 `examples/fixtures/demo-shell-snapshot.sh` — repo-tracked fixture with fake credentials; drop into `~/.claude/shell-snapshots/` to trigger live findings for testing
+  - [x] 🟢 HTML report: make finding target/file path a clickable link that opens the folder in Finder/Explorer — same server-call pattern as `scan.js` folder links (call `/open?path=...` endpoint; falls back to clipboard copy in static mode)
+  - [ ] 🟢 Add "Last audit" line to `scan.js` HTML footer linking to most recent `audit-*.html` in `reports/`
+  - [ ] 🟢 Update `SPEC.md`: move "Planned: audit.js" to "scripts/audit.js — Full Architecture" after implementation
+  - [ ] 🟢 Update `examples/example-dashboard.html` footer if `scan.js` footer changes
 
 ### Documentation
 
