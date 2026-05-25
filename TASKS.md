@@ -211,6 +211,19 @@ The current dashboard is read-only. A bigger vision is a full control-panel fron
 
 ---
 
+### Drill-Down Tiles (Detail Views)
+
+When clicking a tile in the dashboard, instead of just seeing the top-level folder card, drill down into a detail view for that folder — same dashboard style, but scoped to what's inside it.
+
+- **Skills tile drill-down** — list every installed skill: name, size on disk, where it was installed from, link to its GitHub repo if detectable. Same card layout as the main dashboard
+- **MCPs tile drill-down** — list every configured MCP: name, which config file it came from, size, source/repo link if available
+- **Projects tile drill-down** — list each project subfolder: path slug, size, last active date, session count. No transcript content — metadata only (privacy)
+- **General pattern** — any folder tile could drill down to show its contents in the same dashboard card format: size, importance, freeable, pros/cons — just one level deeper
+- **Breadcrumb nav** — dashboard → folder → subfolder, so the user always knows where they are and can go back
+- **Design question to resolve:** is this a new page/tab per folder, or an inline expand on the card? Inline is simpler; separate page scales better for deep folders
+
+---
+
 ### Projects Folder Deep Dive
 
 The `~/.claude/projects/` folder is almost always the largest item in `~/.claude` — it holds every conversation transcript for every project you've ever used Claude Code in. Right now `scan.js` only shows its total size. There is no visibility into what's actually inside.
