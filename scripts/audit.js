@@ -315,6 +315,16 @@ function renderTerminal(findings, { highCount, warnCount, okCount }) {
   console.log('  ' + highStr + '   ' + warnStr + '   ' + okStr);
   console.log();
 
+  // Disclaimer — always shown
+  console.log(c('gray', '  ╔' + '═'.repeat(WIDTH - 4) + '╗'));
+  console.log(c('gray', '  ║') + c('yellow', ' ⚠  DISCLAIMER') + ' '.repeat(WIDTH - 19) + c('gray', '║'));
+  console.log(c('gray', '  ║') + '  This tool uses pattern matching and is not exhaustive.      ' + c('gray', '║'));
+  console.log(c('gray', '  ║') + '  It may miss secrets or flag false positives. Treat all      ' + c('gray', '║'));
+  console.log(c('gray', '  ║') + '  findings as leads to investigate — not confirmed risks.     ' + c('gray', '║'));
+  console.log(c('gray', '  ║') + '  Validate manually before taking any action.                ' + c('gray', '║'));
+  console.log(c('gray', '  ╚' + '═'.repeat(WIDTH - 4) + '╝'));
+  console.log();
+
   if (highCount > 0) {
     console.log(cb('red', '  ⚠  Possible credentials detected. Rotate affected keys and delete the listed files.'));
     console.log();
@@ -472,6 +482,17 @@ function renderHTML(findings, { highCount, warnCount, okCount }) {
       font-weight: 600;
     }
     .finding-action { color: #0369a1; }
+    .disclaimer {
+      background: #fffbeb;
+      border: 1px solid #f59e0b;
+      border-left: 4px solid #f59e0b;
+      border-radius: 10px;
+      padding: 1rem 1.5rem;
+      margin-bottom: 1.5rem;
+      font-size: 0.875rem;
+      color: #78350f;
+    }
+    .disclaimer strong { color: #92400e; }
     footer {
       text-align: center;
       margin-top: 2.5rem;
@@ -511,6 +532,13 @@ function renderHTML(findings, { highCount, warnCount, okCount }) {
       <div class="stat-value">${3}</div>
     </div>
     <div class="summary-msg ${summaryClass}">${escapeHtml(summaryMsg)}</div>
+  </div>
+
+  <div class="disclaimer">
+    <strong>⚠ Disclaimer:</strong> This tool uses pattern matching and is not exhaustive.
+    It may miss secrets or flag false positives. Treat all findings as leads to investigate —
+    not confirmed risks. You are responsible for manually validating results and deciding
+    what action, if any, to take. This tool does not replace a professional security review.
   </div>
 
   <div class="findings">
