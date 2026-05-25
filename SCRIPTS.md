@@ -123,64 +123,23 @@ node scripts/clean.js --only-shell-snapshots --keep-count 5 --execute
 
 ---
 
-## `audit.js` — Security Scanner
+## `audit.js` — Security Check *(coming in Phase 2)*
 
-`audit.js` scans `~/.claude` for security risks: API keys or secrets in shell snapshots, sensitive environment variable names, and unrecognized MCP service entries.
+> **Not yet built.** The design is finalized — this section documents how it will work.
 
-**It is read-only — it never modifies or deletes anything.**
+`audit.js` scans `~/.claude` for security risks: API keys or secrets in shell snapshots, sensitive environment variables, unusual MCP service entries.
 
-> ⚠ **This tool uses pattern matching and is not exhaustive.** A clean result does not mean your data is secure — it means no known patterns were matched. Findings may be false positives; absences may be false negatives. You are responsible for your own due diligence, manual verification, and compliance with any security policies applicable to your work.
+It is read-only — it never deletes anything. It produces a report of findings with severity levels and recommended actions.
 
-### What it scans
-
-| Target | What it looks for | Severity |
-|--------|------------------|----------|
-| `shell-snapshots/` | API key patterns: `sk-`, `ghp_`, `AKIA`, `Bearer`, named secrets (`*_API_KEY=`, `*_TOKEN=`, etc.) | 🔴 HIGH |
-| `session-env/` | Sensitive environment variable names: `*_KEY`, `*_TOKEN`, `*_SECRET`, `*_PASSWORD`, `DATABASE_URL`, etc. | 🟡 WARN |
-| `mcp-needs-auth-cache.json` | External service hosts not on the known-safe list | 🟡 WARN |
-
-Matched secret values are always truncated to the first 6 characters + `***`. Full values are never shown.
-
-### Usage
+### Planned usage
 
 ```bash
-# Terminal report (color-coded)
+# Run a full security audit (read-only, always safe)
 node scripts/audit.js
 
-# Terminal report, no color (for piping or logging)
-node scripts/audit.js --no-color
-
-# Save plain text report to the reports/ folder
-node scripts/audit.js --no-color > reports/audit-report.txt
-
-# Generate a visual HTML report (opens automatically)
-node scripts/audit.js --html
-
-# Save HTML only, no terminal output
-node scripts/audit.js --html-only
+# Save report to file
+node scripts/audit.js --no-color > audit-report.txt
 ```
-
-> **Note on saving text output:** The `>` redirect writes to your current working directory. Always specify `reports/` explicitly (e.g. `> reports/audit-report.txt`) so the output stays with other generated files and out of the project root.
-
-### Flags
-
-| Flag | What it does |
-|------|-------------|
-| *(no flags)* | Terminal output with ANSI color |
-| `--html` | Terminal output + save `reports/audit-YYYY-MM-DD.html` and open it |
-| `--html-only` | Save HTML report only, no terminal output |
-| `--no-color` | Plain text output — no ANSI codes (use for piping or saving to file) |
-
-### Reading the results
-
-Each finding shows:
-- **Severity** — 🔴 HIGH (likely credential), 🟡 WARN (review needed), 🟢 OK (no known patterns matched)
-- **Target** — which folder or file was scanned
-- **Pattern** — what type of pattern was detected
-- **Found** — truncated preview of the match (never the full value)
-- **Action** — recommended next step
-
-An 🟢 OK result means **no known patterns were matched in the scanned files** — not that the files are guaranteed clean. Treat results as leads to investigate, not definitive verdicts.
 
 ---
 
