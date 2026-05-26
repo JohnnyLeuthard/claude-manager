@@ -2,7 +2,7 @@
 
 Living checklist of work completed, in progress, and planned for the `claude-manager/` project.
 
-**Last updated:** May 25, 2026
+**Last updated:** May 25, 2026 (added scan history/growth tracking idea, deletion manifest to clean.js)
 
 ---
 
@@ -111,6 +111,7 @@ The goal of Phase 2 is to build automated tools to scan, classify, and safely cl
   - [ ] 🟢 `--older-than-days <N>` for age-based cleanup
   - [ ] 🟢 `--keep-count <N>` to keep only the most recent N items
   - [ ] 🟢 Logging: what was deleted, why, timestamp (only written when `--execute` is used)
+  - [ ] 🟢 Deletion manifest: write a JSON log of every deleted item (path, size, timestamp) to `reports/clean-YYYY-MM-DD.json` — enables manual rollback reference
   - [ ] 🟡 Interactive mode: confirm each deletion before proceeding (only active with `--execute`)
 
 ### Security Auditing
@@ -203,6 +204,17 @@ As new folders or files appear in `~/.claude` (new Claude Code features, new MCP
 Unconfirmed ideas — not committed to, not scoped. Parking lot for things worth thinking about. Grouped by theme.
 
 > **Every idea here requires a dedicated planning session before any implementation begins.** Do not start building directly from the notes below — use them as a starting point for scoping, design decisions, and breaking the work into tasks. Move the resulting tasks into the appropriate Phase section once planned.
+
+### Scan History & Growth Tracking
+
+Right now every scan is stateless — there's no record of how `~/.claude` has changed over time. Adding a lightweight history layer would let users spot runaway growth before it becomes a problem.
+
+- **Snapshot on each scan** — after every `scan.js` run, append a compact JSON line to `reports/history.jsonl`: timestamp, per-folder sizes, totals. File is gitignored.
+- **`--history` flag** — print a delta table comparing the current scan to the previous one: which folders grew, by how much, since when
+- **Growth alerts** — if any folder doubled since last scan, flag it prominently in terminal output
+- **No new dependencies** — just JSON append + diff math; no charting library needed for the terminal view. HTML view could add a simple size-over-time table using the same inline-JS pattern as the current dashboard
+
+---
 
 ### Editable Folder Metadata File
 
